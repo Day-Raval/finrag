@@ -1,0 +1,10 @@
+qdrant-client
+rank-bm25
+sentence-transformers
+pyyaml
+python-dotenv
+requests
+beautifulsoup4
+pytest
+ruff
+groq

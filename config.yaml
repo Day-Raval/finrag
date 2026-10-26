@@ -1,0 +1,7 @@
+corpus: {years: [2021, 2022], manifest: data/manifest.csv}
+chunking: {strategy: fixed, size: 512, overlap: 64}
+embedding: {provider: local, model: BAAI/bge-small-en-v1.5}
+retrieval: {top_k: 5, hybrid: false, rerank: false}
+generation: {provider: groq, model: openai/gpt-oss-120b, prompt: prompts/answer_v1.md, temperature: 0}
+judge: {provider: groq, model: openai/gpt-oss-20b, temperature: 0, reasoning_effort: high, max_tokens: 1024}
+bulk: {provider: groq, model: openai/gpt-oss-20b}
