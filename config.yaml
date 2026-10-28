@@ -1,4 +1,9 @@
-corpus: {years: [2021, 2022], manifest: data/manifest.csv}
+corpus:
+  years: [2021, 2022]
+  tickers: [AMD, BA, AXP, PEP, MMM, VZ, CVS, AES, JNJ, GLW, LMT, KO, AWK, GIS, PFE]
+  raw_dir: data/raw
+  parsed_dir: data/parsed
+  manifest: data/manifest.csv
 chunking: {strategy: fixed, size: 512, overlap: 64}
 embedding: {provider: local, model: BAAI/bge-small-en-v1.5}
 retrieval: {top_k: 5, hybrid: false, rerank: false}
