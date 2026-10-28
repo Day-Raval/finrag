@@ -118,12 +118,18 @@ The parser writes one JSONL record per 10-K Item under `data/parsed/`, preservin
 ├── config.yaml              # RAG, model, and chunking configuration
 ├── prompts/
 │   └── answer_v1.md         # Grounded-answer prompt contract
-├── src/finrag/
-│   ├── ingestion/           # Implemented EDGAR fetcher and 10-K parser
-│   ├── indexing/            # Planned embeddings and Qdrant indexing
-│   ├── answering/           # Planned retrieval and grounded answer generation
-│   ├── evaluation/          # Planned answer quality checks
-│   └── __init__.py          # Application package
+├── src/
+│   ├── README.md            # Source layout note
+│   └── finrag/
+│       ├── ingestion/       # Implemented EDGAR fetcher and 10-K parser
+│       ├── corpus/          # Planned corpus management and chunking
+│       ├── embeddings/      # Planned embedding model wrapper
+│       ├── indexing/        # Planned Qdrant indexing
+│       ├── retrieval/       # Planned chunk retrieval
+│       ├── generation/      # Planned Groq answer generation
+│       ├── answering/       # Planned retrieval-to-answer orchestration
+│       ├── evaluation/      # Planned answer quality checks
+│       └── __init__.py      # Application package
 ├── tests/
 │   ├── test_fetch_filings.py
 │   ├── test_parse_filings.py
@@ -172,8 +178,12 @@ The source package is separated by pipeline stage:
 | Package | Responsibility |
 | --- | --- |
 | `finrag.ingestion` | Download, parse, normalize, and chunk SEC filings. |
-| `finrag.indexing` | Create chunk embeddings and maintain the Qdrant index. |
-| `finrag.answering` | Retrieve evidence, assemble prompts, and generate cited answers. |
+| `finrag.corpus` | Manage the filing corpus and chunk parsed filings. |
+| `finrag.embeddings` | Create embeddings for chunks and questions. |
+| `finrag.indexing` | Maintain the Qdrant index of chunk embeddings. |
+| `finrag.retrieval` | Search the index for relevant filing chunks. |
+| `finrag.generation` | Call the Groq answer model with grounded context. |
+| `finrag.answering` | Orchestrate retrieval, prompting, and cited answers. |
 | `finrag.evaluation` | Judge answer quality against the retrieval and citation contract. |
 
 ## Security and data handling
