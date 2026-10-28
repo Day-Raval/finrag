@@ -2,7 +2,7 @@
 
 **FinRAG** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 foundation. Configuration, prompt policy, and environment smoke tests are in place. The ingestion, indexing, retrieval, generation, and evaluation workflows described below are the intended v1 architecture and are not yet implemented.
+> **Project status:** v0.1.0 early development. SEC EDGAR filing acquisition and 10-K parsing (steps 1.3–1.4) are implemented. Chunking, indexing, retrieval, answer generation, and evaluation remain planned and are not yet implemented.
 
 ## What it is for
 
@@ -96,7 +96,20 @@ SEC_USER_AGENT="Your Name your.email@example.com"
 pytest
 ```
 
-The smoke tests verify that `config.yaml` is valid and that the required environment variables are present.
+The tests cover configuration and environment setup, plus the filing fetcher and parser. The fetcher/parser tests run offline and do not contact SEC EDGAR.
+
+### Fetch and parse SEC filings
+
+With `SEC_USER_AGENT` set in `.env`, run these commands from the repository root:
+
+```bash
+python -m finrag.ingestion.fetch_filings
+python -m finrag.ingestion.parse_filings
+```
+
+The fetcher retrieves the configured FY2021 and FY2022 10-Ks for 15 companies (30 filings), skips amendments, respects SEC request limits, and writes filing metadata and SHA-256 checksums to `data/manifest.csv`. Fiscal years are based on the filing period end, with first-week-of-January ends assigned to the prior fiscal year for 52/53-week companies. Existing raw filings are skipped on reruns.
+
+The parser writes one JSONL record per 10-K Item under `data/parsed/`, preserving section metadata and formatting tables as Markdown. Its report flags filings that need review before downstream processing. All generated files under `data/` are gitignored; see [`src/finrag/ingestion/README.md`](src/finrag/ingestion/README.md) for parsing details, output fields, and known filing quirks.
 
 ## Repository layout
 
@@ -106,12 +119,14 @@ The smoke tests verify that `config.yaml` is valid and that the required environ
 ├── prompts/
 │   └── answer_v1.md         # Grounded-answer prompt contract
 ├── src/finrag/
-│   ├── ingestion/           # Filing acquisition, parsing, and chunking
-│   ├── indexing/            # Embeddings and Qdrant indexing
-│   ├── answering/           # Retrieval and grounded answer generation
-│   ├── evaluation/          # Answer quality checks
+│   ├── ingestion/           # Implemented EDGAR fetcher and 10-K parser
+│   ├── indexing/            # Planned embeddings and Qdrant indexing
+│   ├── answering/           # Planned retrieval and grounded answer generation
+│   ├── evaluation/          # Planned answer quality checks
 │   └── __init__.py          # Application package
 ├── tests/
+│   ├── test_fetch_filings.py
+│   ├── test_parse_filings.py
 │   └── test_smoke.py        # Configuration and environment checks
 ├── .env.example             # Required environment-variable template
 └── spec.md                  # Product scope and quality bar
