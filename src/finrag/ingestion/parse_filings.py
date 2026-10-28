@@ -10,10 +10,14 @@ need a manual look.
 import csv
 import json
 import re
+import warnings as pywarnings
 from pathlib import Path
 
 import yaml
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString, XMLParsedAsHTMLWarning
+
+# Some 10-Ks are XHTML with an <?xml?> header; the HTML parser handles them fine.
+pywarnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 ITEMS = "1 1A 1B 1C 2 3 4 5 6 7 7A 8 9 9A 9B 9C 10 11 12 13 14 15 16".split()  # noqa: SIM905
 CORE = ["1", "1A", "7", "8"]  # sections the golden questions mostly hit
@@ -28,35 +32,53 @@ def clean(text: str) -> str:
 
 
 def table_lines(table) -> list[str]:
-    rows = []
+    # 1. Lay cells out on the real column grid (colspan-aware) so values stay
+    #    under their year/header even when a row skips a column.
+    rows, spans = [], []
     for tr in table.find_all("tr"):
-        merged: list[str] = []
-        for cell in (clean(td.get_text(" ")) for td in tr.find_all(["td", "th"])):
-            if not cell:
-                continue  # filings use empty cells for spacing
-            if merged and cell in {")", "%", ")%"}:
-                merged[-1] += cell  # "(56" + ")" -> "(56)"
-            elif merged and merged[-1] in {"$", "($"}:
-                merged[-1] += cell  # "$" + "1,234" -> "$1,234"
-            else:
-                merged.append(cell)
-        if merged:
-            rows.append(merged)
+        cols: list[str] = []
+        for td in tr.find_all(["td", "th"]):
+            text = clean(td.get_text(" "))
+            raw_span = str(td.get("colspan", "1"))
+            span = int(raw_span) if raw_span.isdigit() and int(raw_span) > 0 else 1
+            if span > 1 and text:
+                spans.append((len(rows), len(cols), span, text))  # placed in step 3
+                text = ""
+            cols += [text] + [""] * (span - 1)
+        rows.append(cols)
+    width = max(map(len, rows), default=0)
+    rows = [r + [""] * (width - len(r)) for r in rows]
+
+    # 2. Glue "$" onto the next value and ")" / "%" onto the previous one.
+    for r in rows:
+        for j in range(width):
+            if r[j] in {"$", "($"}:
+                k = next((k for k in range(j + 1, width) if r[k]), None)
+                if k is not None:
+                    r[k], r[j] = r[j] + r[k], ""
+            elif r[j] in {")", "%", ")%"}:
+                k = next((k for k in range(j - 1, -1, -1) if r[k]), None)
+                if k is not None:
+                    r[k], r[j] = r[k] + r[j], ""
+
+    # 3. Put each spanning header over the first column in its span that has data.
+    used = {j for r in rows for j, c in enumerate(r) if c}
+    for i, start, span, text in spans:
+        col = next((j for j in range(start, start + span) if j in used), start)
+        rows[i][col] = text
+        used.add(col)
+
+    # 4. Drop spacer columns and empty rows.
+    keep = sorted(used)
+    rows = [[r[j] for j in keep] for r in rows]
+    rows = [r for r in rows if any(r)]
     if not rows:
         return []
-    if len(rows) == 1 and len(rows[0]) <= 3:
+    if len(rows) == 1 and sum(map(bool, rows[0])) <= 3:
         # layout table, e.g. "| ITEM 7. | MD&A |" used as a heading
-        return [" ".join(rows[0])]
-    width = max(map(len, rows))
-    # shortcut: rows are left-aligned after dropping spacer cells, so a short row
-    # can shift columns; fix if numeric QA suffers
-    lines = [
-        "| "
-        + " | ".join(c.replace("|", "/") for c in r + [""] * (width - len(r)))
-        + " |"
-        for r in rows
-    ]
-    lines.insert(1, "|" + " --- |" * width)
+        return [" ".join(c for c in rows[0] if c)]
+    lines = ["| " + " | ".join(c.replace("|", "/") for c in r) + " |" for r in rows]
+    lines.insert(1, "|" + " --- |" * len(keep))
     return lines
 
 
@@ -75,13 +97,21 @@ def html_to_lines(html: bytes) -> list[str]:
 
 
 def split_sections(lines: list[str]) -> tuple[list[dict], list[str]]:
-    last: dict[str, int] = {}
+    positions: dict[str, list[int]] = {}
     for i, line in enumerate(lines):
         m = HEADING.match(line)
         if m and len(line) < 200 and m.group(1).upper() in ITEMS:
-            # the table of contents comes first, so the last match is the real heading
-            last[m.group(1).upper()] = i
-    starts = sorted((i, item) for item, i in last.items())
+            positions.setdefault(m.group(1).upper(), []).append(i)
+    # Walk items from last (16) to first (1): each takes its latest heading that sits
+    # before the next item's. Skips table-of-contents entries and stray later lines
+    # that merely start with "Item 1." (e.g. cross-references in Part III).
+    chosen: dict[str, int] = {}
+    limit = len(lines)
+    for item in reversed(ITEMS):
+        before = [i for i in positions.get(item, []) if i < limit]
+        if before:
+            chosen[item] = limit = before[-1]
+    starts = sorted((i, item) for item, i in chosen.items())
 
     sections = []
     for k, (i, item) in enumerate(starts):
@@ -93,15 +123,18 @@ def split_sections(lines: list[str]) -> tuple[list[dict], list[str]]:
             {"item": item, "title": title[:150], "text": "\n".join(lines[i + 1 : end])}
         )
 
-    warnings = [f"missing Item {c}" for c in CORE if c not in last]
-    order = [s["item"] for s in sections]
-    if order != sorted(order, key=ITEMS.index):
-        warnings.append(f"items out of order: {order}")
+    warnings = [f"missing Item {c}" for c in CORE if c not in chosen]
     for s in sections:
         if s["item"] in ("7", "8") and len(s["text"]) < 5000:
-            warnings.append(
-                f"Item {s['item']} only {len(s['text'])} chars (incorporated by reference?)"
+            # Some filers (PepsiCo, Corning) put the statements under another Item.
+                        # the full statements are the biggest section mentioning "Total assets"
+            home = max(
+                (o for o in sections if "Total assets" in o["text"]),
+                key=lambda o: len(o["text"]),
+                default=None,
             )
+            if s["item"] == "8" and home:
+                warnings.append(f"note: financial statements are under Item {home['item']}")
     return sections, warnings
 
 
@@ -137,8 +170,9 @@ def main() -> None:
                 for s in sections
             )
         sizes = {s["item"]: len(s["text"]) for s in sections if s["item"] in CORE}
-        status = "CHECK" if warnings else "ok"
-        flagged += bool(warnings)
+        problems = [w for w in warnings if not w.startswith("note:")]
+        status = "CHECK" if problems else "ok"
+        flagged += bool(problems)
         print(f"{status:5} {doc_id:9} {len(sections):2} sections  core chars {sizes}")
         for w in warnings:
             print(f"      - {w}")
