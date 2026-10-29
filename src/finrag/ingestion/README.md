@@ -86,6 +86,7 @@ filing.
 | PepsiCo (PEP) | Item 8 says "See Item 15"; statements are inside Item 7 | PEP Item 7 is ~2x typical size |
 | Corning (GLW) | Statements follow the Item 16 heading at the end of the filing | Statements are labelled Item 16 |
 | Johnson & Johnson (JNJ) | 52/53-week fiscal year ending in early January | Handled by the fiscal-year rule |
+| General Mills FY2022 (GIS_2022) | Tables use positioned text boxes, not `<table>`: 0 Markdown rows, one cell per line, and lone 1–3 digit cells are dropped as page numbers | Numeric questions on GIS_2022 are harder; candidate fix in step 1.11 |
 
 Retrieval searches text regardless of Item label, so these do not lose content,
 but the `item` field does not always describe what the section contains.

@@ -7,4 +7,5 @@ requests
 beautifulsoup4
 pytest
 ruff
-groqlxml
+groq
+lxml

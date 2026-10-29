@@ -10,3 +10,7 @@ retrieval: {top_k: 5, hybrid: false, rerank: false}
 generation: {provider: groq, model: openai/gpt-oss-120b, prompt: prompts/answer_v1.md, temperature: 0}
 judge: {provider: groq, model: openai/gpt-oss-20b, temperature: 0, reasoning_effort: high, max_tokens: 1024}
 bulk: {provider: groq, model: openai/gpt-oss-20b}
+golden:
+  path: evals/golden.jsonl
+  custom: evals/custom.jsonl
+  financebench_dir: data/financebench

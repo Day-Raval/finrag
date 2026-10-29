@@ -23,10 +23,12 @@ def test_parse_sections_and_tables():
     assert "12" not in lines  # page number dropped
 
     sections, warnings = split_sections(lines)
-    assert [s["item"] for s in sections] == ["1", "7"]  # table of contents skipped
-    assert sections[0]["text"] == "We make chips."
-    assert "| | 2022 | 2021 |" in sections[1]["text"]
-    assert "| Revenue | $1,234 | $(56) |" in sections[1]["text"]
+    # cover page (here: the table of contents) is kept; TOC entries aren't headings
+    assert [s["item"] for s in sections] == ["COVER", "1", "7"]
+    assert "| ITEM 1. BUSINESS | 3 |" in sections[0]["text"]
+    assert sections[1]["text"] == "We make chips."
+    assert "| | 2022 | 2021 |" in sections[2]["text"]
+    assert "| Revenue | $1,234 | $(56) |" in sections[2]["text"]
     assert "missing Item 1A" in warnings
 
 

@@ -114,6 +114,10 @@ def split_sections(lines: list[str]) -> tuple[list[dict], list[str]]:
     starts = sorted((i, item) for item, i in chosen.items())
 
     sections = []
+    if starts and starts[0][0] > 0:
+        # cover page: registered securities, shares outstanding, filer status
+        cover = "\n".join(lines[: starts[0][0]])
+        sections.append({"item": "COVER", "title": "Cover page", "text": cover})
     for k, (i, item) in enumerate(starts):
         end = starts[k + 1][0] if k + 1 < len(starts) else len(lines)
         title = HEADING.match(lines[i]).group(2) or (
