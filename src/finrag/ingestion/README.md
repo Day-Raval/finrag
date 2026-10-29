@@ -9,7 +9,8 @@ fiscal year, and 10-K Item.
 | `fetch_filings.py` | 1.3 | `config.yaml` (tickers, years) | `data/raw/<TICKER>_<FY>.htm`, `data/manifest.csv` |
 | `parse_filings.py` | 1.4 | `data/manifest.csv`, raw HTML | `data/parsed/<TICKER>_<FY>.jsonl` |
 
-Chunking is not implemented yet; it arrives with the baseline RAG (step 1.6).
+The baseline chunker in [`../corpus/fixed_chunks.py`](../corpus/fixed_chunks.py)
+consumes these parsed records to create indexable chunks.
 
 ## Run
 
@@ -22,6 +23,16 @@ python -m finrag.ingestion.parse_filings   # prints a per-filing ok/CHECK report
 
 `data/` is gitignored. Rebuild it from these two commands; `manifest.csv`
 records a SHA-256 per filing so a rebuild can be checked against a previous run.
+
+## How it works
+
+`fetch_filings.py` resolves each configured ticker to a CIK, finds the matching
+10-K in SEC submissions data, downloads the filing HTML, and records its
+provenance and checksum in the manifest. `parse_filings.py` reads that manifest,
+turns the HTML into normalized text and Markdown tables, splits the text into
+filing sections, and writes one JSONL record per section. The downstream index
+builder consumes those records; parsing itself never calls an embedding model or
+Qdrant.
 
 ## Fetching (`fetch_filings.py`)
 
@@ -55,6 +66,8 @@ records a SHA-256 per filing so a rebuild can be checked against a previous run.
   16 back to 1, giving each the latest heading that sits before the next Item's.
   This skips table-of-contents entries and stray lines that merely start with
   "Item 1." (a real case in General Mills FY2022).
+- Writes the content before the first Item heading as a `COVER` section, making
+  cover-page facts such as shares outstanding available to retrieval.
 
 ### Output record (one JSON line per Item)
 

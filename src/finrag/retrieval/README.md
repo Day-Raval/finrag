@@ -1,5 +1,27 @@
 # Retrieval
 
-This package will search the Qdrant index for the filing chunks most relevant to a question and return them with their company, fiscal year, and section metadata.
+This package performs dense retrieval over the local Qdrant index.
 
-Retrieval settings such as result count and enhancements are controlled in `config.yaml`.
+[`dense.py`](dense.py) embeds a question with the shared embedding model and
+returns the closest chunk payloads with rounded similarity scores. It opens one
+cached local Qdrant client per process and closes it on interpreter shutdown.
+
+`search(question, cfg)` uses `retrieval.top_k` from `config.yaml` (five in the
+baseline); callers can provide `k` to override that count. Hybrid retrieval and
+reranking remain disabled in the baseline configuration.
+
+## How it works
+
+`search()` embeds the question with the same normalized model used for chunks,
+queries the configured Qdrant collection, and returns each result's stored
+payload with a rounded similarity score. The payload supplies the company,
+fiscal year, Item, source URL, and text later used by answer generation.
+
+## Limitations
+
+- Retrieval is dense-only: it has no keyword search, metadata filters, hybrid
+  fusion, reranking, or query rewriting.
+- There is no relevance-score threshold, so the pipeline always sends up to
+  `top_k` matches to generation even for poorly matched questions.
+- Search requires a previously built local index and does not detect stale
+  chunks when parsed filings or embedding settings change.

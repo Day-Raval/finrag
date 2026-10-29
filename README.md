@@ -2,7 +2,7 @@
 
 **FinRAG** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 early development. SEC EDGAR filing acquisition and 10-K parsing (steps 1.3–1.4) are implemented. Chunking, indexing, retrieval, answer generation, and evaluation remain planned and are not yet implemented.
+> **Project status:** v0.1.0 baseline RAG is implemented. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set supports baseline evaluation. Automated answer judging remains planned.
 
 ## What it is for
 
@@ -29,7 +29,7 @@ The v1 scope excludes 10-Qs, earnings calls, real-time prices, and investment ad
 | Embeddings | Local `BAAI/bge-small-en-v1.5` | `config.yaml` |
 | Vector search | Local Qdrant | `config.yaml` |
 | Answer generation | Groq `openai/gpt-oss-120b` | `config.yaml` |
-| Answer evaluation | Groq `openai/gpt-oss-20b` | `config.yaml` |
+| Answer evaluation (planned) | Groq `openai/gpt-oss-20b` | `config.yaml` |
 
 The answer prompt at [`prompts/answer_v1.md`](prompts/answer_v1.md) enforces source citations and the required no-evidence response.
 
@@ -54,7 +54,7 @@ flowchart LR
     config -. configures .-> judge
 ```
 
-The diagram represents the proposed v1 flow. Components under `src/finrag` are organized around these responsibilities as implementation proceeds.
+The implemented baseline follows this flow through answer generation. The Groq quality judge remains planned; components under `src/finrag` are organized around these pipeline responsibilities.
 
 ## Getting started
 
@@ -96,20 +96,49 @@ SEC_USER_AGENT="Your Name your.email@example.com"
 pytest
 ```
 
-The tests cover configuration and environment setup, plus the filing fetcher and parser. The fetcher/parser tests run offline and do not contact SEC EDGAR.
+The tests cover configuration and environment setup, filing fetching and parsing, fixed-size chunking, citation-context formatting, and golden-set construction. The fetcher/parser tests run offline and do not contact SEC EDGAR.
 
-### Fetch and parse SEC filings
+### Build the local RAG corpus
 
 With `SEC_USER_AGENT` set in `.env`, run these commands from the repository root:
 
 ```bash
 python -m finrag.ingestion.fetch_filings
 python -m finrag.ingestion.parse_filings
+python -m finrag.indexing.build_index
 ```
 
 The fetcher retrieves the configured FY2021 and FY2022 10-Ks for 15 companies (30 filings), skips amendments, respects SEC request limits, and writes filing metadata and SHA-256 checksums to `data/manifest.csv`. Fiscal years are based on the filing period end, with first-week-of-January ends assigned to the prior fiscal year for 52/53-week companies. Existing raw filings are skipped on reruns.
 
-The parser writes one JSONL record per 10-K Item under `data/parsed/`, preserving section metadata and formatting tables as Markdown. Its report flags filings that need review before downstream processing. All generated files under `data/` are gitignored; see [`src/finrag/ingestion/README.md`](src/finrag/ingestion/README.md) for parsing details, output fields, and known filing quirks.
+The parser writes one JSONL record per 10-K Item under `data/parsed/`, including a `COVER` section for cover-page facts, preserving section metadata and formatting tables as Markdown. Its report flags filings that need review before downstream processing. The index builder tokenizes each parsed section into overlapping 512-token chunks, embeds them with `BAAI/bge-small-en-v1.5`, writes the chunks to `data/index/chunks.jsonl`, and rebuilds the local Qdrant collection. All generated files under `data/` are gitignored; see [`src/finrag/ingestion/README.md`](src/finrag/ingestion/README.md) for parsing details, output fields, and known filing quirks.
+
+### Ask a question
+
+After building the index, query the baseline pipeline with a Groq API key configured:
+
+```bash
+python -m finrag.answering.pipeline "What was 3M's FY2022 revenue?"
+```
+
+The command retrieves the top five dense matches from the local Qdrant index, sends their citation-labeled text to the configured Groq model, and prints the answer, retrieved chunk IDs and scores, latency, and token usage.
+
+### Create and run the golden set
+
+Build the golden set after parsing filings:
+
+```bash
+python -m finrag.evaluation.build_golden
+```
+
+This downloads and caches FinanceBench's open sample in `data/financebench/`, selects in-scope 10-K questions, maps their evidence to parsed filing sections, and combines them with the project's custom cases. The resulting `evals/golden.jsonl` contains 57 FinanceBench and 22 custom questions across extraction, numeric, reasoning, open, comparison, multi-year, and unanswerable categories.
+
+To run every golden question through the current pipeline:
+
+```bash
+python -m finrag.answering.run_golden baseline
+```
+
+Results and a copy of the active configuration are written to `reports/runs/baseline/`. Interrupted or rate-limited runs are resumable: rerun the same command to skip completed questions.
 
 ## Repository layout
 
@@ -121,18 +150,36 @@ The parser writes one JSONL record per 10-K Item under `data/parsed/`, preservin
 ├── src/
 │   ├── README.md            # Source layout note
 │   └── finrag/
-│       ├── ingestion/       # Implemented EDGAR fetcher and 10-K parser
-│       ├── corpus/          # Planned corpus management and chunking
-│       ├── embeddings/      # Planned embedding model wrapper
-│       ├── indexing/        # Planned Qdrant indexing
-│       ├── retrieval/       # Planned chunk retrieval
-│       ├── generation/      # Planned Groq answer generation
-│       ├── answering/       # Planned retrieval-to-answer orchestration
-│       ├── evaluation/      # Planned answer quality checks
+│       ├── ingestion/
+│       │   ├── fetch_filings.py  # EDGAR 10-K downloader
+│       │   └── parse_filings.py  # Section-level JSONL parser
+│       ├── corpus/
+│       │   └── fixed_chunks.py   # Overlapping token chunker
+│       ├── embeddings/
+│       │   └── encoder.py        # Shared local embedding model
+│       ├── indexing/
+│       │   └── build_index.py    # Local Qdrant index builder
+│       ├── retrieval/
+│       │   └── dense.py          # Dense Qdrant retrieval
+│       ├── generation/
+│       │   └── answer.py         # Grounded Groq answer generation
+│       ├── answering/
+│       │   ├── pipeline.py       # Single-question RAG pipeline
+│       │   └── run_golden.py     # Resumable golden-set runner
+│       ├── evaluation/
+│       │   ├── build_golden.py   # FinanceBench/custom golden-set builder
+│       │   └── lookup.py         # Parsed-filing lookup CLI
 │       └── __init__.py      # Application package
+├── evals/
+│   ├── custom.jsonl         # Hand-written golden cases
+│   └── golden.jsonl         # Generated FinanceBench and custom cases
+├── reports/
+│   └── runs/                # Generated benchmark answers and configurations
 ├── tests/
 │   ├── test_fetch_filings.py
+│   ├── test_golden.py
 │   ├── test_parse_filings.py
+│   ├── test_rag_baseline.py
 │   └── test_smoke.py        # Configuration and environment checks
 ├── .env.example             # Required environment-variable template
 └── spec.md                  # Product scope and quality bar
@@ -147,6 +194,9 @@ Runtime behavior is centralized in [`config.yaml`](config.yaml):
 - `embedding`: embedding provider and model
 - `retrieval`: result count and retrieval enhancements
 - `generation` and `judge`: Groq models and decoding settings
+- `golden`: golden-set source and output locations
+- `index`: local chunk export and Qdrant collection settings
+- `runs_dir`: benchmark-output directory
 
 Keep model and retrieval changes in this file so experiments remain reviewable and reproducible.
 
@@ -177,14 +227,14 @@ The source package is separated by pipeline stage:
 
 | Package | Responsibility |
 | --- | --- |
-| `finrag.ingestion` | Download, parse, normalize, and chunk SEC filings. |
-| `finrag.corpus` | Manage the filing corpus and chunk parsed filings. |
-| `finrag.embeddings` | Create embeddings for chunks and questions. |
-| `finrag.indexing` | Maintain the Qdrant index of chunk embeddings. |
-| `finrag.retrieval` | Search the index for relevant filing chunks. |
-| `finrag.generation` | Call the Groq answer model with grounded context. |
-| `finrag.answering` | Orchestrate retrieval, prompting, and cited answers. |
-| `finrag.evaluation` | Judge answer quality against the retrieval and citation contract. |
+| `finrag.ingestion` | Download and parse SEC filings into section-level JSONL. |
+| `finrag.corpus` | Create overlapping fixed-token chunks while preserving citation metadata. |
+| `finrag.embeddings` | Load and use the shared embedding model for chunks and questions. |
+| `finrag.indexing` | Embed chunks and rebuild the local Qdrant collection. |
+| `finrag.retrieval` | Return the highest-scoring dense matches from the index. |
+| `finrag.generation` | Format cited context and call the Groq answer model. |
+| `finrag.answering` | Orchestrate a question or golden set through retrieval and generation. |
+| `finrag.evaluation` | Build the FinanceBench/custom golden set and search parsed filings for custom answers. |
 
 ## Security and data handling
 
