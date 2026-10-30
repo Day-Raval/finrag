@@ -10,6 +10,16 @@ cached local Qdrant client per process and closes it on interpreter shutdown.
 baseline); callers can provide `k` to override that count. Hybrid retrieval and
 reranking remain disabled in the baseline configuration.
 
+## Baseline result
+
+The checked-in `dense_fixed_512_64` retrieval evaluation measures the configured
+top-5 search against golden evidence: section recall is 0.543, document recall
+is 0.855, and MRR is 0.329. Recreate that measurement after building the index:
+
+```bash
+python -m finrag.evaluation.retrieval_eval dense_fixed_512_64
+```
+
 ## How it works
 
 `search()` embeds the question with the same normalized model used for chunks,

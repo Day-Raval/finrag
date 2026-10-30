@@ -2,7 +2,7 @@
 
 **FinRAG** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 baseline RAG is implemented. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set supports baseline evaluation. Automated answer judging remains planned.
+> **Project status:** v0.1.0 baseline RAG is implemented and evaluated. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge measure the baseline. Its results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
 
 ## What it is for
 
@@ -29,7 +29,7 @@ The v1 scope excludes 10-Qs, earnings calls, real-time prices, and investment ad
 | Embeddings | Local `BAAI/bge-small-en-v1.5` | `config.yaml` |
 | Vector search | Local Qdrant | `config.yaml` |
 | Answer generation | Groq `openai/gpt-oss-120b` | `config.yaml` |
-| Answer evaluation (planned) | Groq `openai/gpt-oss-20b` | `config.yaml` |
+| Answer evaluation | Deterministic scorers and Groq `openai/gpt-oss-20b` judge | `config.yaml` |
 
 The answer prompt at [`prompts/answer_v1.md`](prompts/answer_v1.md) enforces source citations and the required no-evidence response.
 
@@ -54,7 +54,7 @@ flowchart LR
     config -. configures .-> judge
 ```
 
-The implemented baseline follows this flow through answer generation. The Groq quality judge remains planned; components under `src/finrag` are organized around these pipeline responsibilities.
+The implemented baseline follows the complete flow, including deterministic scoring and the Groq quality judge. Components under `src/finrag` are organized around these pipeline responsibilities.
 
 ## Getting started
 
@@ -96,7 +96,7 @@ SEC_USER_AGENT="Your Name your.email@example.com"
 pytest
 ```
 
-The tests cover configuration and environment setup, filing fetching and parsing, fixed-size chunking, citation-context formatting, and golden-set construction. The fetcher/parser tests run offline and do not contact SEC EDGAR.
+The tests cover configuration and environment setup, filing fetching and parsing, fixed-size chunking, deterministic scoring, judge-output parsing, citation-context formatting, and golden-set construction. The fetcher/parser tests run offline and do not contact SEC EDGAR.
 
 ### Build the local RAG corpus
 
@@ -140,6 +140,31 @@ python -m finrag.answering.run_golden baseline
 
 Results and a copy of the active configuration are written to `reports/runs/baseline/`. Interrupted or rate-limited runs are resumable: rerun the same command to skip completed questions.
 
+Score the saved answers and run the judge:
+
+```bash
+python -m finrag.evaluation.score_run baseline
+python -m finrag.evaluation.retrieval_eval dense_fixed_512_64
+python -m finrag.evaluation.judge baseline correctness
+python -m finrag.evaluation.judge baseline faithfulness
+```
+
+`score_run` writes per-question scores and `summary.json`; `retrieval_eval` writes retrieval-only metrics without generating answers. The judge writes one JSONL result per mode, skips completed verdicts, and retries invalid prior verdicts. Correctness compares an answer with its reference; faithfulness checks non-refused answers against their retrieved context.
+
+## Baseline results
+
+The checked-in `baseline` run answered all 79 golden questions. Its retrieval-only results for fixed 512-token chunks, 64-token overlap, and top-5 dense search were:
+
+| Metric | Result |
+| --- | ---: |
+| Section recall | 54.3% |
+| Document recall | 85.5% |
+| MRR | 0.329 |
+
+For the 69 answerable questions, deterministic scoring found a 17.2% numeric-match rate, 29.0% citation rate, and 68.1% false-refusal rate. The 10 unanswerable cases were refused correctly. Median latency was 22.8 seconds and p95 was 32.01 seconds, which is above the project target.
+
+The LLM judge marked 20 answers correct, 3 partial, and 56 incorrect (0.272 weighted correctness). Of 22 non-refused answers evaluated for faithfulness, 20 were faithful and 2 unfaithful (0.909). These baseline measurements identify retrieval coverage, answer completeness, and refusal behavior as the next improvement areas rather than claims of system quality.
+
 ## Repository layout
 
 ```text
@@ -168,7 +193,10 @@ Results and a copy of the active configuration are written to `reports/runs/base
 │       │   └── run_golden.py     # Resumable golden-set runner
 │       ├── evaluation/
 │       │   ├── build_golden.py   # FinanceBench/custom golden-set builder
-│       │   └── lookup.py         # Parsed-filing lookup CLI
+│       │   ├── lookup.py         # Parsed-filing lookup CLI
+│       │   ├── score_run.py      # Deterministic saved-run scoring
+│       │   ├── retrieval_eval.py # Retrieval-only benchmarking
+│       │   └── judge.py          # Correctness and faithfulness judge
 │       └── __init__.py      # Application package
 ├── evals/
 │   ├── custom.jsonl         # Hand-written golden cases
@@ -234,7 +262,7 @@ The source package is separated by pipeline stage:
 | `finrag.retrieval` | Return the highest-scoring dense matches from the index. |
 | `finrag.generation` | Format cited context and call the Groq answer model. |
 | `finrag.answering` | Orchestrate a question or golden set through retrieval and generation. |
-| `finrag.evaluation` | Build the FinanceBench/custom golden set and search parsed filings for custom answers. |
+| `finrag.evaluation` | Build the golden set, score saved runs, benchmark retrieval, and judge answer correctness and faithfulness. |
 
 ## Security and data handling
 

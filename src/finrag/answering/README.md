@@ -22,6 +22,16 @@ python -m finrag.answering.run_golden baseline
 The prompt requires `Not found in the filings.` when retrieved context does not
 support an answer.
 
+Score a completed run with:
+
+```bash
+python -m finrag.evaluation.score_run baseline
+```
+
+This writes `scores.jsonl` and `summary.json` alongside the answer rows. Use
+the evaluation package's judge command for LLM correctness and faithfulness
+verdicts.
+
 ## How it works
 
 `answer()` measures retrieval time, calls dense retrieval, passes the returned
@@ -37,5 +47,5 @@ new JSONL row so it can resume after interruption.
   retrieved chunks actually support the answer.
 - Golden runs catch and resume only `Groq` rate-limit errors; other failures
   stop the run and require investigation before retrying.
-- Results are local JSONL artifacts; the package provides no aggregate quality
-  score, comparison report, or automated judge.
+- The runner does not score or judge answers itself; run the evaluation commands
+  after it completes.
