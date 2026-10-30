@@ -1,0 +1,27 @@
+{"id": "fb_00215", "category": "reasoning", "claims": 6, "unsupported": [], "verdict": "faithful", "tokens": 3863}
+{"id": "fb_00464", "category": "open", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3333}
+{"id": "fb_00494", "category": "open", "claims": 5, "unsupported": [], "verdict": "faithful", "tokens": 3820}
+{"id": "fb_00499", "category": "reasoning", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3549}
+{"id": "fb_00585", "category": "open", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3326}
+{"id": "fb_00678", "category": "numeric", "verdict": "error", "raw": "", "tokens": 4189}
+{"id": "fb_00790", "category": "reasoning", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3203}
+{"id": "fb_00859", "category": "open", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3186}
+{"id": "fb_00995", "category": "extraction", "verdict": "error", "raw": "", "tokens": 4715}
+{"id": "fb_01028", "category": "extraction", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3219}
+{"id": "fb_01091", "category": "extraction", "claims": 7, "unsupported": [], "verdict": "faithful", "tokens": 3835}
+{"id": "fb_01244", "category": "extraction", "claims": 1, "unsupported": [], "verdict": "faithful", "tokens": 3141}
+{"id": "fb_01319", "category": "extraction", "claims": 2, "unsupported": ["The FY\u202f2022 income statements do not list a separate line item for restructuring costs.", "Since no restructuring expense is disclosed in the FY\u202f2022 sections provided, the amount is\u202f0."], "verdict": "unfaithful", "tokens": 3381}
+{"id": "fb_01328", "category": "extraction", "claims": 1, "unsupported": [], "verdict": "faithful", "tokens": 3310}
+{"id": "fb_01346", "category": "numeric", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3294}
+{"id": "fb_01351", "category": "numeric", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3378}
+{"id": "fb_04980", "category": "extraction", "claims": 1, "unsupported": [], "verdict": "faithful", "tokens": 2872}
+{"id": "fb_06272", "category": "numeric", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3516}
+{"id": "fb_09724", "category": "numeric", "verdict": "error", "raw": "", "tokens": 4123}
+{"id": "x_cmp_02", "category": "comparison", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3233}
+{"id": "x_cmp_06", "category": "comparison", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3589}
+{"id": "x_yoy_06", "category": "multi_year", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3754}
+{"id": "fb_00678", "category": "numeric", "verdict": "error", "raw": "", "tokens": 4189}
+{"id": "fb_00995", "category": "extraction", "verdict": "error", "raw": "", "tokens": 4715}
+{"id": "fb_09724", "category": "numeric", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3363}
+{"id": "fb_00678", "category": "numeric", "claims": 7, "unsupported": ["The company therefore emphasizes segment\u2011level operating results rather than a single company\u2011wide gross\u2011margin figure.", "Because gross margin is not disclosed and Boeing\u2019s multi\u2011segment, contract\u2011heavy model makes operating\u2011margin measures more informative, gross margin is not a particularly useful metric for assessing Boeing\u2019s FY\u202f2022 performance."], "verdict": "unfaithful", "tokens": 5131}
+{"id": "fb_00995", "category": "extraction", "claims": 9, "unsupported": [], "verdict": "faithful", "tokens": 4878}

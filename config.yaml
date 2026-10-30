@@ -11,7 +11,16 @@ embedding: {provider: local, model: BAAI/bge-small-en-v1.5}
 retrieval: {top_k: 5, hybrid: false, rerank: false}
 # Configuration for generation and evaluation of financial data.
 generation: {provider: groq, model: openai/gpt-oss-120b, prompt: prompts/answer_v1.md, temperature: 0}
-judge: {provider: groq, model: openai/gpt-oss-20b, temperature: 0, reasoning_effort: high, max_tokens: 1024}
+# Configuration for the judge component - responsible for evaluating the correctness and faithfulness of generated financial data.
+# judge: {provider: groq, model: openai/gpt-oss-20b, temperature: 0, reasoning_effort: high, max_tokens: 1024} - legacy configuration for high reasoning effort
+judge:
+  provider: groq
+  model: openai/gpt-oss-20b
+  temperature: 0
+  reasoning_effort: medium
+  max_tokens: 2048
+  correctness_prompt: prompts/judge_correctness_v1.md
+  faithfulness_prompt: prompts/judge_faithfulness_v1.md
 bulk: {provider: groq, model: openai/gpt-oss-20b}
 # golden data configuration
 golden:
