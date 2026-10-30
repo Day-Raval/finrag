@@ -1,0 +1,79 @@
+{"id": "fb_00005", "category": "reasoning", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": true, "refused": true, "total_s": 24.85, "tokens": 3010}
+{"id": "fb_00070", "category": "reasoning", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 0.93, "tokens": 3026}
+{"id": "fb_00215", "category": "reasoning", "section_recall": 0.5, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": true, "refused": false, "total_s": 7.94, "tokens": 3260}
+{"id": "fb_00216", "category": "reasoning", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.2, "numeric_match": 0.0, "citation": true, "refused": true, "total_s": 24.43, "tokens": 3179}
+{"id": "fb_00222", "category": "reasoning", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.99, "tokens": 3066}
+{"id": "fb_00302", "category": "open", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 24.94, "tokens": 2821}
+{"id": "fb_00464", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": null, "citation": true, "refused": false, "total_s": 21.99, "tokens": 3171}
+{"id": "fb_00476", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 23.79, "tokens": 3028}
+{"id": "fb_00494", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.6666666666666666, "citation": true, "refused": false, "total_s": 23.73, "tokens": 3478}
+{"id": "fb_00499", "category": "reasoning", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": true, "refused": false, "total_s": 25.53, "tokens": 3325}
+{"id": "fb_00517", "category": "reasoning", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.2, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 24.46, "tokens": 2946}
+{"id": "fb_00540", "category": "reasoning", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.79, "tokens": 2974}
+{"id": "fb_00563", "category": "open", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 22.46, "tokens": 2905}
+{"id": "fb_00566", "category": "numeric", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 19.9, "tokens": 3027}
+{"id": "fb_00585", "category": "open", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.5, "citation": true, "refused": false, "total_s": 25.12, "tokens": 3219}
+{"id": "fb_00669", "category": "reasoning", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.39, "tokens": 2911}
+{"id": "fb_00678", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": false, "total_s": 24.28, "tokens": 3437}
+{"id": "fb_00702", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.2, "numeric_match": null, "citation": false, "refused": true, "total_s": 25.34, "tokens": 3270}
+{"id": "fb_00711", "category": "reasoning", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.65, "tokens": 2886}
+{"id": "fb_00720", "category": "reasoning", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": null, "citation": false, "refused": true, "total_s": 23.0, "tokens": 3284}
+{"id": "fb_00723", "category": "numeric", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 24.47, "tokens": 2947}
+{"id": "fb_00735", "category": "extraction", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 22.3, "tokens": 3008}
+{"id": "fb_00757", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 20.44, "tokens": 2824}
+{"id": "fb_00790", "category": "reasoning", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.25, "numeric_match": 0.0, "citation": true, "refused": false, "total_s": 22.41, "tokens": 3227}
+{"id": "fb_00859", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 22.88, "tokens": 3078}
+{"id": "fb_00917", "category": "reasoning", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 23.67, "tokens": 2925}
+{"id": "fb_00956", "category": "reasoning", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 19.92, "tokens": 3167}
+{"id": "fb_00995", "category": "extraction", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": null, "citation": true, "refused": false, "total_s": 26.91, "tokens": 4407}
+{"id": "fb_01009", "category": "extraction", "section_recall": 0.5, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": null, "citation": false, "refused": true, "total_s": 26.82, "tokens": 3173}
+{"id": "fb_01028", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.25, "numeric_match": null, "citation": true, "refused": false, "total_s": 22.67, "tokens": 2987}
+{"id": "fb_01091", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.25, "numeric_match": null, "citation": true, "refused": false, "total_s": 32.8, "tokens": 3163}
+{"id": "fb_01107", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.2, "citation": true, "refused": true, "total_s": 14.4, "tokens": 3296}
+{"id": "fb_01198", "category": "extraction", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 25.06, "tokens": 2919}
+{"id": "fb_01226", "category": "reasoning", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.52, "tokens": 2921}
+{"id": "fb_01244", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 30.68, "tokens": 3044}
+{"id": "fb_01279", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 13.34, "tokens": 2841}
+{"id": "fb_01290", "category": "reasoning", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.65, "tokens": 3238}
+{"id": "fb_01319", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 32.01, "tokens": 3163}
+{"id": "fb_01328", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": false, "total_s": 15.98, "tokens": 3340}
+{"id": "fb_01346", "category": "numeric", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.5, "citation": true, "refused": false, "total_s": 24.48, "tokens": 3294}
+{"id": "fb_01351", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.25, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 25.89, "tokens": 3269}
+{"id": "fb_01865", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.2, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.67, "tokens": 2979}
+{"id": "fb_01964", "category": "open", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 32.56, "tokens": 3091}
+{"id": "fb_01981", "category": "open", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 13.65, "tokens": 2939}
+{"id": "fb_02024", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.27, "tokens": 2959}
+{"id": "fb_02416", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": null, "citation": false, "refused": true, "total_s": 19.66, "tokens": 2557}
+{"id": "fb_02981", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.54, "tokens": 2999}
+{"id": "fb_03031", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.67, "tokens": 2890}
+{"id": "fb_03620", "category": "numeric", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.4, "tokens": 2984}
+{"id": "fb_03718", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.78, "tokens": 3057}
+{"id": "fb_04254", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.77, "tokens": 3197}
+{"id": "fb_04481", "category": "numeric", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 25.09, "tokens": 2938}
+{"id": "fb_04980", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": true, "refused": false, "total_s": 20.24, "tokens": 2794}
+{"id": "fb_06272", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 1.0, "citation": false, "refused": false, "total_s": 24.19, "tokens": 3427}
+{"id": "fb_09724", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": false, "total_s": 24.28, "tokens": 3347}
+{"id": "fb_10136", "category": "numeric", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.45, "tokens": 2877}
+{"id": "fb_10420", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.62, "tokens": 3125}
+{"id": "x_cmp_01", "category": "comparison", "section_recall": 0.5, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.26, "tokens": 2899}
+{"id": "x_cmp_02", "category": "comparison", "section_recall": 0.5, "doc_recall": 0.5, "mrr": 0.25, "numeric_match": 0.6666666666666666, "citation": false, "refused": false, "total_s": 21.63, "tokens": 3083}
+{"id": "x_cmp_03", "category": "comparison", "section_recall": 0.0, "doc_recall": 0.5, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 16.39, "tokens": 2048}
+{"id": "x_cmp_04", "category": "comparison", "section_recall": 0.5, "doc_recall": 0.5, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.79, "tokens": 2905}
+{"id": "x_cmp_05", "category": "comparison", "section_recall": 0.0, "doc_recall": 0.5, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.83, "tokens": 2942}
+{"id": "x_cmp_06", "category": "comparison", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.5, "citation": true, "refused": false, "total_s": 22.33, "tokens": 3349}
+{"id": "x_una_01", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 23.39, "tokens": 2916}
+{"id": "x_una_02", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 23.52, "tokens": 2953}
+{"id": "x_una_03", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 38.8, "tokens": 2930}
+{"id": "x_una_04", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 1.39, "tokens": 2817}
+{"id": "x_una_05", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 4.67, "tokens": 2966}
+{"id": "x_una_06", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 22.01, "tokens": 2841}
+{"id": "x_una_07", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 23.48, "tokens": 3142}
+{"id": "x_una_08", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 17.9, "tokens": 2516}
+{"id": "x_una_09", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 22.32, "tokens": 2885}
+{"id": "x_una_10", "category": "unanswerable", "numeric_match": null, "citation": null, "refused": true, "total_s": 21.5, "tokens": 2818}
+{"id": "x_yoy_01", "category": "multi_year", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.26, "tokens": 3038}
+{"id": "x_yoy_02", "category": "multi_year", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 16.3, "tokens": 2363}
+{"id": "x_yoy_03", "category": "multi_year", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.87, "tokens": 3048}
+{"id": "x_yoy_04", "category": "multi_year", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.12, "tokens": 2864}
+{"id": "x_yoy_05", "category": "multi_year", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.29, "tokens": 2933}
+{"id": "x_yoy_06", "category": "multi_year", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.75, "citation": true, "refused": false, "total_s": 26.33, "tokens": 3528}
