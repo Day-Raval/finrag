@@ -4,7 +4,7 @@
 
 **Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 baseline RAG is implemented and evaluated. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge measure the baseline. Its results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
+> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling: a 24-question dev subset, an LLM response cache, and a run-to-run diff. The baseline's results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
 
 ## What it is for
 
@@ -98,7 +98,7 @@ SEC_USER_AGENT="Your Name your.email@example.com"
 pytest
 ```
 
-The tests cover configuration and environment setup, filing fetching and parsing, fixed-size chunking, deterministic scoring, judge-output parsing, citation-context formatting, and golden-set construction. The fetcher/parser tests run offline and do not contact SEC EDGAR.
+The tests cover configuration and environment setup, filing fetching and parsing, fixed-size chunking, deterministic scoring, judge-output parsing, judge-agreement statistics, the dev subset, the LLM response cache, run comparison, citation-context formatting, and golden-set construction. All tests run offline: they do not contact SEC EDGAR or Groq.
 
 ### Build the local RAG corpus
 
@@ -153,6 +153,31 @@ python -m finrag.evaluation.judge baseline faithfulness
 
 `score_run` writes per-question scores and `summary.json`; `retrieval_eval` writes retrieval-only metrics without generating answers. The judge writes one JSONL result per mode, skips completed verdicts, and retries invalid prior verdicts. Correctness compares an answer with its reference; faithfulness checks non-refused answers against their retrieved context.
 
+### Validate the judge
+
+Before trusting judge scores, compare them with your own labels on a fixed sample of 20 answers (16 attempted answers and 4 refusals):
+
+```bash
+python -m finrag.evaluation.label baseline       # interactive; the judge's verdicts are hidden
+python -m finrag.evaluation.agreement baseline   # agreement, Cohen's kappa, disagreements
+```
+
+Labels are saved to `reports/runs/<run>/human_labels.jsonl` after every answer, so labelling can be stopped and resumed. The target is at least 80% pass/fail agreement and kappa of at least 0.6.
+
+### Run experiments cheaply
+
+Groq's free tier allows about 200K tokens per model per day, and a full 79-question run uses about 240K. Day-to-day experiments therefore use a fixed 24-question dev subset (3–4 questions per category, about 72K tokens), and the full golden set is kept for milestone runs:
+
+```bash
+python -m finrag.evaluation.make_dev                 # writes evals/dev.jsonl (fixed seed)
+python -m finrag.answering.run_golden my_exp dev     # answer the dev subset
+python -m finrag.evaluation.score_run my_exp
+python -m finrag.evaluation.judge my_exp correctness
+python -m finrag.evaluation.diff dev_baseline my_exp # what improved, what regressed
+```
+
+Every Groq call (answers and judge verdicts) is cached under `data/cache/llm/`, keyed by model, full prompt, and decoding settings. Rerunning an unchanged configuration therefore costs no tokens, and an experiment only pays for questions whose prompt actually changed. Empty answers and unparseable judge replies are never cached. `diff` compares only the questions both runs answered and exits with code 1 if judged correctness drops by more than 0.05, so it can gate CI. Retrieval-only experiments need no LLM at all: use `retrieval_eval`.
+
 ## Baseline results
 
 The checked-in `baseline` run answered all 79 golden questions. Its retrieval-only results for fixed 512-token chunks, 64-token overlap, and top-5 dense search were:
@@ -167,15 +192,19 @@ For the 69 answerable questions, deterministic scoring found a 17.2% numeric-mat
 
 The LLM judge marked 20 answers correct, 3 partial, and 56 incorrect (0.272 weighted correctness). Of 22 non-refused answers evaluated for faithfulness, 20 were faithful and 2 unfaithful (0.909). These baseline measurements identify retrieval coverage, answer completeness, and refusal behavior as the next improvement areas rather than claims of system quality. The 0.272 correctness figure covers all 79 questions; on the 69 answerable ones it is 0.167. The correctness judge was validated against 20 hand-labelled answers: 90% pass/fail agreement, Cohen's kappa 0.74. Both disagreements were the judge being more lenient than the human label, so correctness may be slightly overstated.
 
+On the 24-question dev subset, the checked-in `dev_baseline` run scored 0.214 judged correctness and a 0.619 false-refusal rate on the 21 answerable questions. Comparing it with the original baseline answers to the same questions showed that fresh answers changed in only one place (one answer dropped its citation), so on the dev subset a change of about 0.05 (one question) is within run-to-run noise.
+
 See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations.
 
 ## Repository layout
 
 ```text
 .
-├── config.yaml              # RAG, model, and chunking configuration
+├── config.yaml              # RAG, model, chunking, golden-set, and index configuration
 ├── prompts/
-│   └── answer_v1.md         # Grounded-answer prompt contract
+│   ├── answer_v1.md              # Grounded-answer prompt contract
+│   ├── judge_correctness_v1.md   # Correctness judge rubric
+│   └── judge_faithfulness_v1.md  # Faithfulness judge rubric
 ├── src/
 │   ├── README.md            # Source layout note
 │   └── finrag/
@@ -191,29 +220,34 @@ See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations
 │       ├── retrieval/
 │       │   └── dense.py          # Dense Qdrant retrieval
 │       ├── generation/
-│       │   └── answer.py         # Grounded Groq answer generation
+│       │   ├── answer.py         # Grounded Groq answer generation
+│       │   └── cache.py          # Disk cache for LLM calls
 │       ├── answering/
 │       │   ├── pipeline.py       # Single-question RAG pipeline
-│       │   └── run_golden.py     # Resumable golden-set runner
+│       │   └── run_golden.py     # Resumable golden/dev-set runner
 │       ├── evaluation/
 │       │   ├── build_golden.py   # FinanceBench/custom golden-set builder
+│       │   ├── make_dev.py       # 24-question dev subset
 │       │   ├── lookup.py         # Parsed-filing lookup CLI
+│       │   ├── scorers.py        # Deterministic scorers
 │       │   ├── score_run.py      # Deterministic saved-run scoring
 │       │   ├── retrieval_eval.py # Retrieval-only benchmarking
-│       │   └── judge.py          # Correctness and faithfulness judge
+│       │   ├── judge.py          # Correctness and faithfulness judge
+│       │   ├── label.py          # Blind hand-labelling CLI
+│       │   ├── agreement.py      # Judge-vs-human agreement and kappa
+│       │   └── diff.py           # Run-to-run comparison and CI gate
 │       └── __init__.py      # Application package
 ├── evals/
 │   ├── custom.jsonl         # Hand-written golden cases
-│   └── golden.jsonl         # Generated FinanceBench and custom cases
+│   ├── golden.jsonl         # Generated FinanceBench and custom cases
+│   └── dev.jsonl            # 24-question dev subset
 ├── reports/
-│   └── runs/                # Generated benchmark answers and configurations
-├── tests/
-│   ├── test_fetch_filings.py
-│   ├── test_golden.py
-│   ├── test_parse_filings.py
-│   ├── test_rag_baseline.py
-│   └── test_smoke.py        # Configuration and environment checks
+│   ├── runs/                # Per-run answers, scores, judge verdicts, hand labels, config
+│   └── retrieval/           # Retrieval-only results
+├── tests/                   # Offline tests (no SEC or Groq calls)
 ├── .env.example             # Required environment-variable template
+├── CHANGELOG.md             # Release notes
+├── LICENSE                  # MIT
 └── spec.md                  # Product scope and quality bar
 ```
 
@@ -226,7 +260,7 @@ Runtime behavior is centralized in [`config.yaml`](config.yaml):
 - `embedding`: embedding provider and model
 - `retrieval`: result count and retrieval enhancements
 - `generation` and `judge`: Groq models and decoding settings
-- `golden`: golden-set source and output locations
+- `golden`: golden-set, custom-case, dev-subset, and FinanceBench cache locations
 - `index`: local chunk export and Qdrant collection settings
 - `runs_dir`: benchmark-output directory
 
@@ -264,9 +298,9 @@ The source package is separated by pipeline stage:
 | `finrag.embeddings` | Load and use the shared embedding model for chunks and questions. |
 | `finrag.indexing` | Embed chunks and rebuild the local Qdrant collection. |
 | `finrag.retrieval` | Return the highest-scoring dense matches from the index. |
-| `finrag.generation` | Format cited context and call the Groq answer model. |
-| `finrag.answering` | Orchestrate a question or golden set through retrieval and generation. |
-| `finrag.evaluation` | Build the golden set, score saved runs, benchmark retrieval, and judge answer correctness and faithfulness. |
+| `finrag.generation` | Format cited context, call the Groq answer model, and cache LLM responses. |
+| `finrag.answering` | Orchestrate a question, the golden set, or the dev subset through retrieval and generation. |
+| `finrag.evaluation` | Build the golden and dev sets, score and compare runs, benchmark retrieval, judge answers, and validate the judge against hand labels. |
 
 ## Security and data handling
 

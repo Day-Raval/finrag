@@ -10,14 +10,20 @@ question after building the index:
 python -m finrag.answering.pipeline "What was 3M's FY2022 revenue?"
 ```
 
-[`run_golden.py`](run_golden.py) runs every case in `evals/golden.jsonl` and
-writes `answers.jsonl` plus a copy of `config.yaml` to
-`reports/runs/<run_name>/`. Existing answer IDs are skipped, so a rate-limited
-or interrupted run resumes when rerun with the same name:
+[`run_golden.py`](run_golden.py) runs every case in `evals/golden.jsonl`, or
+the 24-question dev subset in `evals/dev.jsonl`, and writes `answers.jsonl` plus
+a copy of `config.yaml` to `reports/runs/<run_name>/`. Existing answer IDs are
+skipped, so a rate-limited or interrupted run resumes when rerun with the same
+name:
 
 ```bash
-python -m finrag.answering.run_golden baseline
+python -m finrag.answering.run_golden baseline        # all 79 golden questions
+python -m finrag.answering.run_golden my_exp dev      # 24-question dev subset (~72K tokens)
 ```
+
+Answers served from the LLM response cache are marked `(cached)`, and the final
+line reports both the run's total tokens and the tokens actually spent, so an
+unchanged rerun shows `0 actually spent`.
 
 The prompt requires `Not found in the filings.` when retrieved context does not
 support an answer.
@@ -36,7 +42,9 @@ verdicts.
 
 `answer()` measures retrieval time, calls dense retrieval, passes the returned
 chunks to generation, and combines the answer metrics with compact retrieved
-chunk identifiers and scores. The single-question CLI loads `.env` and
+chunk identifiers and scores. Its `total_s` is retrieval time plus generation
+latency; for a cached answer the original generation latency is kept, so
+p50/p95 stay comparable across runs. The single-question CLI loads `.env` and
 `config.yaml` before printing that result. The golden runner reads unfinished
 case IDs from its output file, answers only remaining cases, and flushes each
 new JSONL row so it can resume after interruption.
@@ -49,3 +57,5 @@ new JSONL row so it can resume after interruption.
   stop the run and require investigation before retrying.
 - The runner does not score or judge answers itself; run the evaluation commands
   after it completes.
+- The first question of each run includes the one-time embedding-model load in
+  its retrieval time, which slightly inflates that question's latency.

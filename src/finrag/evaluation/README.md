@@ -19,7 +19,15 @@ custom cases:
 python -m finrag.evaluation.lookup KO_2022 "total assets"
 ```
 
-Golden-set runs are performed by
+[`make_dev.py`](make_dev.py) picks a fixed 24-question dev subset (3–4 per
+category, seeded) for day-to-day experiments, so each one costs about 72K
+generator tokens instead of about 240K:
+
+```bash
+python -m finrag.evaluation.make_dev    # writes evals/dev.jsonl
+```
+
+Golden-set and dev-subset runs are performed by
 [`finrag.answering.run_golden`](../answering/run_golden.py).
 
 ## Score a run
@@ -56,9 +64,50 @@ python -m finrag.evaluation.judge baseline faithfulness
 Correctness compares each answer with its reference. Faithfulness checks only
 non-refused answers against the chunks retrieved for that answer. Each command
 writes `judge_<kind>.jsonl`, resumes completed work, and retries invalid prior
-judge output. The checked-in baseline has 20 correct, 3 partial, and 56
+judge output. Valid verdicts are cached, so rejudging an unchanged answer costs
+no tokens. The checked-in baseline has 20 correct, 3 partial, and 56
 incorrect correctness verdicts (0.272 weighted score); its faithfulness judge
 found 20 faithful and 2 unfaithful answers (0.909 score).
+
+## Validate the judge
+
+Judge scores are only trusted after comparing them with hand labels on a fixed,
+seeded sample of 20 answers (16 attempted answers and 4 refusals; unanswerable
+questions are excluded):
+
+```bash
+python -m finrag.evaluation.label baseline       # blind: the judge's verdicts are not shown
+python -m finrag.evaluation.agreement baseline
+```
+
+[`label.py`](label.py) shows each answer next to its reference and saves a
+correct / partial / incorrect / refused label after every answer to
+`reports/runs/<run>/human_labels.jsonl`. [`agreement.py`](agreement.py) reports
+pass/fail agreement (pass = correct), Cohen's kappa, a human-vs-judge table, and
+every disagreement with both reasons. The target is at least 80% agreement and
+kappa of at least 0.6.
+
+On the baseline, the judge reached 90% agreement and kappa 0.74. Both
+disagreements were the judge being more lenient than the human label: it
+accepted a right conclusion with wrong reasoning, and missed an answer drawn
+from the wrong fiscal year. The judge also never uses the `refused` verdict
+(refusals are scored `incorrect`, with the same score of 0).
+
+## Compare runs
+
+```bash
+python -m finrag.evaluation.diff dev_baseline my_exp [max_drop]
+```
+
+[`diff.py`](diff.py) compares two scored runs on the questions both answered,
+so a dev run can be compared with the full baseline. It prints each metric's
+change, marked better or worse, and lists questions whose judged correctness
+went down or up. It exits with code 1 if correctness drops by more than
+`max_drop` (default 0.05), so it can gate CI.
+
+Two independent runs of the unchanged baseline on the dev subset differed in a
+single answer (one dropped citation). On the dev subset one question is worth
+about 0.05, so treat changes of that size as noise and look for 0.10 or more.
 
 ## How it works
 
@@ -82,3 +131,7 @@ uses versioned prompts and parses a JSON verdict from Groq.
 - The LLM judge can return an invalid response and does not replace human
   review; run faithfulness evaluation before rebuilding the index because it
   uses the current chunk export.
+- Judge validation uses 20 labels from one person on one run; agreement may
+  differ on later runs whose answers fail in new ways.
+- `diff` gates only on judged correctness; retrieval-only changes are shown but
+  do not fail the check.
