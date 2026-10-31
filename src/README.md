@@ -1,6 +1,6 @@
 # Source layout
 
-This directory contains the FinRAG application package. Its README prevents GitHub from collapsing `src` and `finrag` into a single directory label in the repository browser.
+This directory contains the Annualyst application package. Its README prevents GitHub from collapsing `src` and `finrag` into a single directory label in the repository browser.
 
 The implemented baseline is organized by pipeline stage:
 

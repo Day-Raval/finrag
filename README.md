@@ -1,12 +1,14 @@
-# FinRAG
+# Annualyst
 
-**FinRAG** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
+*Grounded Q&A over SEC 10-K filings, with an evaluation harness. Repository and Python package: `finrag`. Latest release: [v0.1.0](https://github.com/Day-Raval/finrag/releases/tag/v0.1.0).*
+
+**Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
 > **Project status:** v0.1.0 baseline RAG is implemented and evaluated. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge measure the baseline. Its results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
 
 ## What it is for
 
-FinRAG is built for financial analysts who need answers from a bounded filing corpus rather than general web knowledge. The initial corpus covers FY2021 and FY2022 10-K filings for 15 public companies (30 filings total), sourced from SEC EDGAR:
+Annualyst is built for financial analysts who need answers from a bounded filing corpus rather than general web knowledge. The initial corpus covers FY2021 and FY2022 10-K filings for 15 public companies (30 filings total), sourced from SEC EDGAR:
 
 AMD, Boeing, American Express, PepsiCo, 3M, Verizon, CVS Health, AES, Johnson & Johnson, Corning, Lockheed Martin, Coca-Cola, American Water Works, General Mills, and Pfizer.
 
@@ -271,7 +273,7 @@ The source package is separated by pipeline stage:
 - Treat `.env` as sensitive and keep it local.
 - Use a truthful, contactable SEC User-Agent when downloading filings.
 - Keep source filings and manifests reproducible; do not present retrieved content as real-time market data.
-- FinRAG is an analytical research tool, not investment advice.
+- Annualyst is an analytical research tool, not investment advice.
 
 ## License
 

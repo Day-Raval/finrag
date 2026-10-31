@@ -1,4 +1,4 @@
-# FinRAG — Spec
+# Annualyst — Spec
 
 ## User
 Financial analyst asking questions about public companies' annual reports.
