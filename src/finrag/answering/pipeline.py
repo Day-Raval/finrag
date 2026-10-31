@@ -22,7 +22,8 @@ def answer(question: str, cfg: dict) -> dict:
     return {
         **result,
         "retrieve_s": retrieve_s,
-        "total_s": round(time.time() - start, 2),
+        # cached answers keep their original latency, so p50/p95 stay comparable
+        "total_s": round(retrieve_s + result["latency_s"], 2),
         "retrieved": [
             {k: c[k] for k in ("chunk_id", "doc_id", "item", "score")} for c in chunks
         ],

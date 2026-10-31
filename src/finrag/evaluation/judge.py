@@ -21,7 +21,7 @@ import yaml
 from dotenv import load_dotenv
 
 from finrag.evaluation.score_run import mean
-from finrag.evaluation.scorers import refused
+from finrag.generation import cache
 from finrag.generation.answer import format_context, get_client
 
 SCORES = {
@@ -50,20 +50,29 @@ def parse(text: str | None, kind: str) -> dict:
     return out
 
 
-def ask(prompt: str, judge: dict) -> tuple[str, int]:
+def ask(prompt: str, judge: dict, kind: str) -> tuple[str, int]:
+    """Judge reply and tokens spent (0 when served from the cache)."""
+    request = {
+        "model": judge["model"],
+        "messages": [{"role": "user", "content": prompt}],
+        **{k: judge[k] for k in PASSTHROUGH if k in judge},
+    }
+    hit = cache.get(request)
+    if hit:
+        return hit["content"], 0
     while True:
         try:
-            resp = get_client().chat.completions.create(
-                model=judge["model"],
-                messages=[{"role": "user", "content": prompt}],
-                **{k: judge[k] for k in PASSTHROUGH if k in judge},
-            )
-            return resp.choices[0].message.content, resp.usage.total_tokens
+            resp = get_client().chat.completions.create(**request)
+            break
         except groq.RateLimitError as e:
             if "per day" in str(e) or "TPD" in str(e):
                 raise
             time.sleep(20)  # per-minute limit: wait for the window to roll over
-
+    content = resp.choices[0].message.content
+    # cache only valid verdicts, so bad replies are retried next run
+    if parse(content, kind)["verdict"] != "error":
+        cache.put(request, {"content": content})
+    return content, resp.usage.total_tokens
 
 def main() -> None:
     if len(sys.argv) != 3 or sys.argv[2] not in SCORES:
@@ -109,7 +118,7 @@ def main() -> None:
                     [chunks[r["chunk_id"]] for r in a["retrieved"]]
                 )
             try:
-                text, tokens = ask(fill(template, **fields), cfg["judge"])
+                text, tokens = ask(fill(template, **fields), cfg["judge"], kind)
             except groq.RateLimitError as e:
                 print(
                     f"\nDaily token limit reached after {n - 1}; rerun later to resume.\n{e}"

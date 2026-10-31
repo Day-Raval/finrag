@@ -6,6 +6,8 @@ from pathlib import Path
 
 from groq import Groq
 
+from finrag.generation import cache
+
 PASSTHROUGH = ("temperature", "reasoning_effort", "max_tokens")
 
 
@@ -29,15 +31,22 @@ def generate(question: str, chunks: list[dict], cfg: dict) -> dict:
         .read_text()
         .format(context=format_context(chunks), question=question)
     )
-    start = time.time()
-    resp = get_client().chat.completions.create(
-        model=gen["model"],
-        messages=[{"role": "user", "content": prompt}],
+    request = {
+        "model": gen["model"],
+        "messages": [{"role": "user", "content": prompt}],
         **{k: gen[k] for k in PASSTHROUGH if k in gen},
-    )
-    return {
+    }
+    hit = cache.get(request)
+    if hit:
+        return {**hit, "cached": True}  # original tokens/latency kept for metrics
+    start = time.time()
+    resp = get_client().chat.completions.create(**request)
+    out = {
         "answer": resp.choices[0].message.content,
         "latency_s": round(time.time() - start, 2),
         "prompt_tokens": resp.usage.prompt_tokens,
         "completion_tokens": resp.usage.completion_tokens,
     }
+    if out["answer"]:  # never cache an empty reply (e.g. ran out of tokens)
+        cache.put(request, out)
+    return {**out, "cached": False}

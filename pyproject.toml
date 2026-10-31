@@ -1,7 +1,7 @@
 [project]
 name = "finrag"
 version = "0.1.0"
-description = "RAG over SEC 10-K filings with an evaluation harness (golden set, deterministic scorers, validated LLM judge)""
+description = "RAG over SEC 10-K filings with an evaluation harness (golden set, deterministic scorers, validated LLM judge)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []

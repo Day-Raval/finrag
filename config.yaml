@@ -26,6 +26,7 @@ bulk: {provider: groq, model: openai/gpt-oss-20b}
 golden:
   path: evals/golden.jsonl
   custom: evals/custom.jsonl
+  dev: evals/dev.jsonl
   financebench_dir: data/financebench
 # Configuration for indexing, retrieval, and evaluation of financial data.
 index:

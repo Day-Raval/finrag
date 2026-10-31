@@ -1,0 +1,24 @@
+{"id": "fb_00070", "category": "reasoning", "verdict": "incorrect", "reason": "The answer incorrectly claims the data is not found, while the reference provides a specific negative working capital figure.", "tokens": 530}
+{"id": "fb_00464", "category": "open", "verdict": "correct", "reason": "The answer correctly states that Boeing\u2019s business is subject to cyclicality, matching the reference.", "tokens": 623}
+{"id": "fb_00494", "category": "open", "verdict": "partial", "reason": "The answer correctly mentions increases for the 787 and 737 but omits the 777X, so it does not fully match the reference.", "tokens": 674}
+{"id": "fb_00517", "category": "reasoning", "verdict": "incorrect", "reason": "The answer states the information is not found, but the reference provides specific categories and percentages.", "tokens": 469}
+{"id": "fb_00540", "category": "reasoning", "verdict": "incorrect", "reason": "The answer does not provide the inventory turnover figure (9.5 times) given in the reference.", "tokens": 465}
+{"id": "fb_00678", "category": "numeric", "verdict": "incorrect", "reason": "The answer states the information was not found, but the reference provides specific figures showing an improving gross margin profile.", "tokens": 541}
+{"id": "fb_00711", "category": "reasoning", "verdict": "incorrect", "reason": "The answer does not provide the inventory turnover figure (2.7) given in the reference.", "tokens": 476}
+{"id": "fb_01009", "category": "extraction", "verdict": "incorrect", "reason": "The answer lists only a subset of the geographies and adds Ukraine, omitting several regions (Latin America, Middle East, South Asia, Asia Pacific, Australia) that the reference identifies.", "tokens": 845}
+{"id": "fb_01198", "category": "extraction", "verdict": "incorrect", "reason": "The answer states the information was not found, but the reference provides specific drivers of revenue change.", "tokens": 446}
+{"id": "fb_01244", "category": "extraction", "verdict": "correct", "reason": "The answer confirms a $0.55 quarterly dividend in Q2 FY2022, matching the reference.", "tokens": 612}
+{"id": "fb_01319", "category": "extraction", "verdict": "correct", "reason": "The answer matches the reference figure of 0.", "tokens": 387}
+{"id": "fb_01346", "category": "numeric", "verdict": "incorrect", "reason": "The answer gives 20.5% to 22.9% (a 2.4\u2011point increase), whereas the reference states 20% to 23% (a 3\u2011point increase).", "tokens": 600}
+{"id": "fb_01351", "category": "numeric", "verdict": "correct", "reason": "The answer matches the reference figures and conclusion.", "tokens": 506}
+{"id": "fb_01865", "category": "open", "verdict": "incorrect", "reason": "The answer does not provide the segment; it incorrectly states the information was not found.", "tokens": 448}
+{"id": "fb_03031", "category": "numeric", "verdict": "incorrect", "reason": "The answer fails to provide the required net working capital figure of $5,818 million.", "tokens": 490}
+{"id": "x_cmp_04", "category": "comparison", "verdict": "incorrect", "reason": "The answer fails to provide the required figures and conclusion, whereas the reference gives specific amounts for both companies.", "tokens": 454}
+{"id": "x_cmp_05", "category": "comparison", "verdict": "incorrect", "reason": "The answer fails to provide the required net income figures and does not match the reference data.", "tokens": 478}
+{"id": "x_cmp_06", "category": "comparison", "verdict": "incorrect", "reason": "The answer incorrectly states that American Water\u2019s capital expenditures were larger, whereas the reference indicates AES spent $4,551\u202fmillion versus $2,297\u202fmillion for American Water.", "tokens": 655}
+{"id": "x_una_01", "category": "unanswerable", "verdict": "correct", "reason": "Answer matches the reference statement that the information was not found in the filings.", "tokens": 382}
+{"id": "x_una_03", "category": "unanswerable", "verdict": "correct", "reason": "Answer matches the reference statement that the information was not found in the filings.", "tokens": 384}
+{"id": "x_una_10", "category": "unanswerable", "verdict": "correct", "reason": "Answer matches the reference statement.", "tokens": 370}
+{"id": "x_yoy_02", "category": "multi_year", "verdict": "incorrect", "reason": "The answer does not provide the employee figures given in the reference.", "tokens": 518}
+{"id": "x_yoy_04", "category": "multi_year", "verdict": "incorrect", "reason": "The answer does not provide the required figures and contradicts the reference data.", "tokens": 451}
+{"id": "x_yoy_05", "category": "multi_year", "verdict": "incorrect", "reason": "The answer does not provide the gross margin figures given in the reference.", "tokens": 432}

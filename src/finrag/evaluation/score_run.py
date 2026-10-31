@@ -81,7 +81,7 @@ def main() -> None:
     latency = sorted(s["total_s"] for s in scores)
     summary = {
         "run": sys.argv[1],
-        "answered": f"{len(rows)}/{len(golden)}",
+        "answered": len(rows),
         "overall": summarize(answerable),
         "refusal_accuracy": mean([s["refused"] for s in unanswerable]),
         "false_refusal_rate": mean([s["refused"] for s in answerable]),
