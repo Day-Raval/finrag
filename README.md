@@ -163,7 +163,9 @@ The checked-in `baseline` run answered all 79 golden questions. Its retrieval-on
 
 For the 69 answerable questions, deterministic scoring found a 17.2% numeric-match rate, 29.0% citation rate, and 68.1% false-refusal rate. The 10 unanswerable cases were refused correctly. Median latency was 22.8 seconds and p95 was 32.01 seconds, which is above the project target.
 
-The LLM judge marked 20 answers correct, 3 partial, and 56 incorrect (0.272 weighted correctness). Of 22 non-refused answers evaluated for faithfulness, 20 were faithful and 2 unfaithful (0.909). These baseline measurements identify retrieval coverage, answer completeness, and refusal behavior as the next improvement areas rather than claims of system quality.
+The LLM judge marked 20 answers correct, 3 partial, and 56 incorrect (0.272 weighted correctness). Of 22 non-refused answers evaluated for faithfulness, 20 were faithful and 2 unfaithful (0.909). These baseline measurements identify retrieval coverage, answer completeness, and refusal behavior as the next improvement areas rather than claims of system quality. The 0.272 correctness figure covers all 79 questions; on the 69 answerable ones it is 0.167. The correctness judge was validated against 20 hand-labelled answers: 90% pass/fail agreement, Cohen's kappa 0.74. Both disagreements were the judge being more lenient than the human label, so correctness may be slightly overstated.
+
+See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations.
 
 ## Repository layout
 
@@ -273,4 +275,11 @@ The source package is separated by pipeline stage:
 
 ## License
 
-No license has been specified yet. Do not assume permission to reuse or redistribute the project until a license is added.
+Code is released under the [MIT License](LICENSE).
+
+The 57 FinanceBench questions in `evals/golden.jsonl` (ids starting `fb_`) come from
+[FinanceBench](https://huggingface.co/datasets/PatronusAI/financebench) by Patronus AI
+(Islam et al., 2023, arXiv:2311.11944) and remain under
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): non-commercial use
+with attribution. SEC filings are public documents and are not redistributed here;
+`fetch_filings` downloads them from EDGAR.
