@@ -1,0 +1,20 @@
+{"id": "fb_00215", "category": "reasoning", "label": "partial", "note": "right conclusion, no capital intensity ratio (used capex size instead)"}
+{"id": "fb_00464", "category": "open", "label": "partial", "note": "right conclusion, wrong reason (long operating cycle \u2260 cyclical demand)"}
+{"id": "fb_00476", "category": "extraction", "label": "refused", "note": "refusal happens to match \u201cnone\u201d; didn\u2019t actually check the cover page"}
+{"id": "fb_00494", "category": "open", "label": "partial", "note": "737 and 787 increases correct; missing 777X"}
+{"id": "fb_00499", "category": "reasoning", "label": "incorrect", "note": "wrong conclusion (says capital-intensive; reference says no, capex/revenue 5.1%)"}
+{"id": "fb_00585", "category": "open", "label": "incorrect", "note": "signs flipped on both years; says fell, actually rose"}
+{"id": "fb_00735", "category": "extraction", "label": "refused", "note": "refusal; reference is a definite \u201cno material legal battles\u201d"}
+{"id": "fb_00790", "category": "reasoning", "label": "incorrect", "note": "right conclusion, but capex $2.5B is FY2021 ($2,520M); FY2022 was $2,727M"}
+{"id": "fb_00995", "category": "extraction", "label": "incorrect", "note": "used FY2021 filing; misses FY22 additions (FPGAs, Adaptive SoCs, DPUs from Xilinx/Pensando)"}
+{"id": "fb_01028", "category": "extraction", "label": "incorrect", "note": "only says \u201cglobal\u201d; falsely claims no regional breakdown (filing has US, EMEA, APAC, LACC"}
+{"id": "fb_01091", "category": "extraction", "label": "correct", "note": "covers both crashes; extra detail accurate"}
+{"id": "fb_01244", "category": "extraction", "label": "correct", "note": "$0.55/quarter, matches"}
+{"id": "fb_01319", "category": "extraction", "label": "correct", "note": "states 0 as instructed; matches"}
+{"id": "fb_01328", "category": "extraction", "label": "incorrect", "note": "says 0; reference $411M (missed restructuring line)"}
+{"id": "fb_01981", "category": "open", "label": "refused", "note": "refusal; reference \u201cYes\u201d"}
+{"id": "fb_04481", "category": "numeric", "label": "refused", "note": "refusal; needs operating income + D&A calculation (reference 16.5%)"}
+{"id": "fb_04980", "category": "extraction", "label": "incorrect", "note": "$4.2B is \u201cnet capital spending\u201d; reference $4.6B gross capex from cash flow statement"}
+{"id": "fb_09724", "category": "numeric", "label": "incorrect", "note": "mixed years: FY2021 COGS \u00f7 FY2020 revenue ($33,014M); with FY2021 revenue $38,655M it would be 39.7%"}
+{"id": "x_cmp_02", "category": "comparison", "label": "partial", "note": "LMT $150.0B correct; Boeing figure missing (not retrieved), no comparison made"}
+{"id": "x_yoy_06", "category": "multi_year", "label": "correct", "note": "both figures and change match"}
