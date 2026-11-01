@@ -4,7 +4,7 @@
 
 **Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling: a 24-question dev subset, an LLM response cache, and a run-to-run diff. The baseline's results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
+> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and the first retrieval experiments: a contextual chunk header raised section recall from 0.543 to 0.652. The baseline's results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
 
 ## What it is for
 
@@ -32,6 +32,8 @@ The v1 scope excludes 10-Qs, earnings calls, real-time prices, and investment ad
 | Vector search | Local Qdrant | `config.yaml` |
 | Answer generation | Groq `openai/gpt-oss-120b` | `config.yaml` |
 | Answer evaluation | Deterministic scorers and Groq `openai/gpt-oss-20b` judge | `config.yaml` |
+
+This table is the v0.1.0 baseline. Experiments change one layer at a time through files in [`configs/`](configs/); see [Retrieval experiments](#retrieval-experiments) for results.
 
 The answer prompt at [`prompts/answer_v1.md`](prompts/answer_v1.md) enforces source citations and the required no-evidence response.
 
@@ -98,7 +100,7 @@ SEC_USER_AGENT="Your Name your.email@example.com"
 pytest
 ```
 
-The tests cover configuration and environment setup, filing fetching and parsing, fixed-size chunking, deterministic scoring, judge-output parsing, judge-agreement statistics, the dev subset, the LLM response cache, run comparison, citation-context formatting, and golden-set construction. All tests run offline: they do not contact SEC EDGAR or Groq.
+The tests cover configuration loading and experiment overrides, environment setup, filing fetching and parsing, fixed-size and section-aware chunking, contextual chunk headers, deterministic scoring, judge-output parsing, judge-agreement statistics, the dev subset, the LLM response cache, run comparison, citation-context formatting, and golden-set construction. All tests run offline: they do not contact SEC EDGAR or Groq.
 
 ### Build the local RAG corpus
 
@@ -196,11 +198,28 @@ On the 24-question dev subset, the checked-in `dev_baseline` run scored 0.214 ju
 
 See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations.
 
+## Retrieval experiments
+
+Each experiment changes one setting on top of the baseline and is scored with `retrieval_eval` on all 69 answerable golden questions (top-5, no LLM calls). Retrieval is deterministic, but one question is worth about 0.015, so differences under about 0.03 are treated as ties.
+
+| Experiment | Config | Section recall@5 | Doc recall@5 | MRR |
+| --- | --- | ---: | ---: | ---: |
+| Baseline: fixed 512 tokens, 64 overlap | `config.yaml` | 0.543 | 0.855 | 0.329 |
+| Section-aware chunks, 512 tokens (1.11) | [`section_512`](configs/section_512.yaml) | 0.522 | 0.848 | 0.343 |
+| Section-aware chunks, 256 tokens (1.11) | [`section_256`](configs/section_256.yaml) | 0.551 | 0.841 | 0.341 |
+| Section-aware 512 + contextual header | [`section_512_hdr`](configs/section_512_hdr.yaml) | 0.551 | 0.928 | 0.361 |
+| **Fixed 512/64 + contextual header (1.12)** | [`fixed_512_64_hdr`](configs/fixed_512_64_hdr.yaml) | **0.652** | **0.971** | **0.408** |
+
+- **Contextual header: clear win.** Embedding each chunk as `company | FY | Item: title` plus its text raised section recall by 0.109 and doc recall to 0.971, so the right company and fiscal year are now almost always retrieved. It is built from existing metadata and costs no LLM tokens. `fixed_512_64_hdr` is the base for later experiments.
+- **Section-aware chunking: no gain.** Keeping paragraphs and table rows intact tied the baseline at both sizes and weakened the header's effect. A likely cause is that section chunks have no overlap, so content near a boundary appears in only one chunk.
+- Answer-level effects (correctness, refusals) have not been measured for these configurations yet.
+
 ## Repository layout
 
 ```text
 .
-├── config.yaml              # RAG, model, chunking, golden-set, and index configuration
+├── config.yaml              # Baseline RAG, model, chunking, golden-set, and index configuration
+├── configs/                 # Experiment overrides (FINRAG_CONFIG=configs/<name>.yaml)
 ├── prompts/
 │   ├── answer_v1.md              # Grounded-answer prompt contract
 │   ├── judge_correctness_v1.md   # Correctness judge rubric
@@ -208,11 +227,13 @@ See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations
 ├── src/
 │   ├── README.md            # Source layout note
 │   └── finrag/
+│       ├── config.py             # Loads config.yaml + optional experiment override
 │       ├── ingestion/
 │       │   ├── fetch_filings.py  # EDGAR 10-K downloader
 │       │   └── parse_filings.py  # Section-level JSONL parser
 │       ├── corpus/
-│       │   └── fixed_chunks.py   # Overlapping token chunker
+│       │   ├── fixed_chunks.py   # Overlapping token chunker
+│       │   └── section_chunks.py # Paragraph/table-aware chunker
 │       ├── embeddings/
 │       │   └── encoder.py        # Shared local embedding model
 │       ├── indexing/
@@ -243,7 +264,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations
 │   └── dev.jsonl            # 24-question dev subset
 ├── reports/
 │   ├── runs/                # Per-run answers, scores, judge verdicts, hand labels, config
-│   └── retrieval/           # Retrieval-only results
+│   └── retrieval/           # Retrieval-only results, one JSON per experiment
 ├── tests/                   # Offline tests (no SEC or Groq calls)
 ├── .env.example             # Required environment-variable template
 ├── CHANGELOG.md             # Release notes
@@ -256,7 +277,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the failure breakdown and known limitations
 Runtime behavior is centralized in [`config.yaml`](config.yaml):
 
 - `corpus`: filing years and manifest location
-- `chunking`: chunk strategy, size, and overlap
+- `chunking`: chunk strategy (`fixed` or `section`), size, overlap, and contextual `header`
 - `embedding`: embedding provider and model
 - `retrieval`: result count and retrieval enhancements
 - `generation` and `judge`: Groq models and decoding settings
@@ -271,8 +292,7 @@ FINRAG_CONFIG=configs/section_512.yaml python -m finrag.indexing.build_index
 FINRAG_CONFIG=configs/section_512.yaml python -m finrag.evaluation.retrieval_eval section_512
 ```
 
-Every module reads the merged configuration, and `run_golden` saves it with each run, so a run's `config.yaml` snapshot records exactly which experiment produced it. 
-Each experiment's `index.collection` matches its file name, so its Qdrant collection and `data/index/<collection>.jsonl` chunk file sit beside the baseline's instead of replacing them.
+Every module reads the merged configuration, and `run_golden` saves it with each run, so a run's `config.yaml` snapshot records exactly which experiment produced it. Each experiment's `index.collection` matches its file name, so its Qdrant collection and `data/index/<collection>.jsonl` chunk file sit beside the baseline's instead of replacing them.
 
 ## Quality contract
 
@@ -302,7 +322,8 @@ The source package is separated by pipeline stage:
 | Package | Responsibility |
 | --- | --- |
 | `finrag.ingestion` | Download and parse SEC filings into section-level JSONL. |
-| `finrag.corpus` | Create overlapping fixed-token chunks while preserving citation metadata. |
+| `finrag.config` | Load `config.yaml` merged with an optional experiment override. |
+| `finrag.corpus` | Create fixed-token or section-aware chunks while preserving citation metadata. |
 | `finrag.embeddings` | Load and use the shared embedding model for chunks and questions. |
 | `finrag.indexing` | Embed chunks and rebuild the local Qdrant collection. |
 | `finrag.retrieval` | Return the highest-scoring dense matches from the index. |

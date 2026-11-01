@@ -10,15 +10,26 @@ cached local Qdrant client per process and closes it on interpreter shutdown.
 baseline); callers can provide `k` to override that count. Hybrid retrieval and
 reranking remain disabled in the baseline configuration.
 
-## Baseline result
+## Results
 
-The checked-in `dense_fixed_512_64` retrieval evaluation measures the configured
-top-5 search against golden evidence: section recall is 0.543, document recall
-is 0.855, and MRR is 0.329. Recreate that measurement after building the index:
+The checked-in retrieval evaluations measure top-5 search against golden
+evidence on all 69 answerable questions:
+
+| Collection | Section recall@5 | Doc recall@5 | MRR |
+| --- | ---: | ---: | ---: |
+| `fixed_512_64` (baseline) | 0.543 | 0.855 | 0.329 |
+| `fixed_512_64_hdr` (best so far) | 0.652 | 0.971 | 0.408 |
+
+Search runs against whichever collection the config names, so an experiment is
+evaluated by pointing `FINRAG_CONFIG` at its config file:
 
 ```bash
 python -m finrag.evaluation.retrieval_eval dense_fixed_512_64
+FINRAG_CONFIG=configs/fixed_512_64_hdr.yaml python -m finrag.evaluation.retrieval_eval fixed_512_64_hdr
 ```
+
+Questions are embedded as plain text; contextual headers are added only to the
+indexed chunks.
 
 ## How it works
 

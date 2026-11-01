@@ -7,9 +7,10 @@ The implemented baseline is organized by pipeline stage:
 | Package | Module | Responsibility |
 | --- | --- | --- |
 | `finrag.ingestion` | `fetch_filings.py`, `parse_filings.py` | Download EDGAR filings and parse them into section-level JSONL. |
-| `finrag.corpus` | `fixed_chunks.py` | Produce overlapping token chunks with citation metadata. |
+| `finrag` | `config.py` | Load `config.yaml` merged with an optional `FINRAG_CONFIG` experiment override. |
+| `finrag.corpus` | `fixed_chunks.py`, `section_chunks.py` | Produce fixed-token or paragraph/table-aware chunks with citation metadata. |
 | `finrag.embeddings` | `encoder.py` | Load and use the shared local embedding model. |
-| `finrag.indexing` | `build_index.py` | Embed chunks and rebuild the local Qdrant index. |
+| `finrag.indexing` | `build_index.py` | Chunk with the configured strategy, optionally add contextual headers, embed, and rebuild one Qdrant collection. |
 | `finrag.retrieval` | `dense.py` | Retrieve the highest-scoring dense matches. |
 | `finrag.generation` | `answer.py`, `cache.py` | Format cited context, generate a Groq answer, and cache LLM responses on disk. |
 | `finrag.answering` | `pipeline.py`, `run_golden.py` | Run one question, or a resumable benchmark over the golden set or dev subset. |
@@ -19,7 +20,9 @@ See the [repository README](../README.md) for setup and runnable commands.
 
 ## How it works
 
-The pipeline is file-backed and local through retrieval: raw SEC HTML becomes
+Every module reads its settings through `finrag.config.load_config()`: `config.yaml`
+is the baseline, and an experiment file in `configs/` can override any subset of
+it. The pipeline is file-backed and local through retrieval: raw SEC HTML becomes
 parsed JSONL, parsed sections become token-overlapping chunks, chunks become
 normalized vectors in local Qdrant, and a question retrieves the nearest chunks.
 Answer generation and optional LLM judging call Groq, and every Groq response is
