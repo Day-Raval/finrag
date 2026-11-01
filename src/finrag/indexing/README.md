@@ -3,7 +3,7 @@
 This package builds the local Qdrant index used by dense retrieval.
 
 [`build_index.py`](build_index.py) reads parsed filings, creates overlapping
-chunks, writes them to `data/index/chunks.jsonl`, embeds their text, and rebuilds
+chunks, writes them to `data/index/<collection>.jsonl`, embeds their text, and rebuilds
 the configured Qdrant collection. Each Qdrant payload contains the chunk's
 citation metadata and source text.
 

@@ -1,45 +1,60 @@
-"""Step 1.6: chunk parsed filings, embed them, and load them into local Qdrant.
+"""Chunk parsed filings, embed them, and load them into local Qdrant.
 
-Run from the repo root:  python -m finrag.indexing.build_index
-
-Rebuilds the collection from scratch. Also writes every chunk to
-data/index/chunks.jsonl (used later for keyword search and debugging).
+Uses `chunking` from the config (config.yaml, or an experiment file chosen with
+FINRAG_CONFIG): strategy `fixed` (step 1.6) or `section` (step 1.11), and
+`header: true` to embed each chunk with a company / fiscal year / Item header
+(step 1.12). Rebuilds only the configured collection, so
+other experiments' collections stay available. Also writes every chunk to
+data/index/<collection>.jsonl (used by the faithfulness judge and debugging).
 """
 
 import json
 import time
 from pathlib import Path
 
-import yaml
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
-from finrag.corpus.fixed_chunks import iter_chunks
+from finrag.config import load_config
+from finrag.corpus.fixed_chunks import fixed_token_chunks, iter_chunks
+from finrag.corpus.section_chunks import section_token_chunks
 from finrag.embeddings.encoder import embed, get_model
 
 BATCH = 256
 
 
+def embed_text(chunk: dict, header: bool) -> str:
+    """Step 1.12: optionally prefix the chunk with where it came from."""
+    if not header:
+        return chunk["text"]
+    title = f": {chunk['title']}" if chunk["title"] else ""
+    return f"{chunk['company']} | FY{chunk['fiscal_year']} | Item {chunk['item']}{title}\n{chunk['text']}"
+
+
 def main() -> None:
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     model_name, idx = cfg["embedding"]["model"], cfg["index"]
     start = time.time()
 
     tokenizer = get_model(model_name).tokenizer
-    chunks = list(
-        iter_chunks(
-            cfg["corpus"]["parsed_dir"],
-            tokenizer,
-            cfg["chunking"]["size"],
-            cfg["chunking"]["overlap"],
+    ch = cfg["chunking"]
+    if ch["strategy"] == "fixed":
+        split = lambda t: fixed_token_chunks(t, tokenizer, ch["size"], ch["overlap"])
+    elif ch["strategy"] == "section":
+        split = lambda t: section_token_chunks(t, tokenizer, ch["size"])
+    else:
+        raise SystemExit(
+            f"unknown chunking strategy: {ch['strategy']!r} (fixed|section)"
         )
-    )
-    Path(idx["chunks"]).parent.mkdir(parents=True, exist_ok=True)
-    with open(idx["chunks"], "w") as f:
+    chunks = list(iter_chunks(cfg["corpus"]["parsed_dir"], split))
+    chunks_path = Path(idx["chunks"].format(collection=idx["collection"]))
+    chunks_path.parent.mkdir(parents=True, exist_ok=True)
+    with chunks_path.open("w") as f:
         f.writelines(json.dumps(c) + "\n" for c in chunks)
-    print(f"{len(chunks):,} chunks -> {idx['chunks']}  ({time.time() - start:.0f}s)")
+    print(f"{len(chunks):,} chunks -> {chunks_path}  ({time.time() - start:.0f}s)")
 
-    vectors = embed([c["text"] for c in chunks], model_name, progress=True)
+    header = ch.get("header", False)
+    vectors = embed([embed_text(c, header) for c in chunks], model_name, progress=True)
     print(f"embedded {len(vectors):,} chunks ({time.time() - start:.0f}s)")
 
     client = QdrantClient(path=idx["qdrant_path"])

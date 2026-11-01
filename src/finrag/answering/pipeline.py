@@ -5,11 +5,10 @@ Run from the repo root:  python -m finrag.answering.pipeline "What was 3M's FY20
 
 import sys
 import time
-from pathlib import Path
 
-import yaml
 from dotenv import load_dotenv
 
+from finrag.config import load_config
 from finrag.generation.answer import generate
 from finrag.retrieval.dense import search
 
@@ -34,7 +33,7 @@ def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit('usage: python -m finrag.answering.pipeline "your question"')
     load_dotenv()
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     out = answer(sys.argv[1], cfg)
     print(out["answer"], "\n")
     for r in out["retrieved"]:

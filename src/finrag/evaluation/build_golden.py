@@ -13,7 +13,8 @@ import re
 from pathlib import Path
 
 import requests
-import yaml
+
+from finrag.config import load_config
 
 FB_URL = "https://raw.githubusercontent.com/patronus-ai/financebench/main/data/"
 FB_FILES = ["financebench_open_source.jsonl", "financebench_document_information.jsonl"]
@@ -76,7 +77,7 @@ def load_financebench(cache: Path) -> tuple[list[dict], dict[str, dict]]:
 
 
 def main() -> None:
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     corpus, golden_cfg = cfg["corpus"], cfg["golden"]
     questions, docs = load_financebench(Path(golden_cfg["financebench_dir"]))
 

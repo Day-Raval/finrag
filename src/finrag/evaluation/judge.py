@@ -1,9 +1,4 @@
-"""Self-contained LLM-as-judge on a saved run (gpt-oss-20b on Groq).
-
-Run from the repo root:
-  python -m finrag.evaluation.judge baseline correctness    # every question, ~1-2K tokens each
-  python -m finrag.evaluation.judge baseline faithfulness   # non-refused answers only, ~4K each
-
+"""Self-contained LLM-as-judge on a saved model run.
 Writes reports/runs/<run>/judge_<kind>.jsonl. Rerunnable: questions already
 judged are skipped (failed parses are retried), so a run stopped by the daily
 token limit resumes where it stopped.
@@ -17,10 +12,11 @@ from collections import Counter
 from pathlib import Path
 
 import groq
-import yaml
 from dotenv import load_dotenv
 
+from finrag.config import load_config
 from finrag.evaluation.score_run import mean
+from finrag.evaluation.scorers import refused
 from finrag.generation import cache
 from finrag.generation.answer import format_context, get_client
 
@@ -81,7 +77,7 @@ def main() -> None:
         )
     run, kind = sys.argv[1], sys.argv[2]
     load_dotenv()
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     run_dir = Path(cfg["runs_dir"]) / run
     template = Path(cfg["judge"][f"{kind}_prompt"]).read_text()
     answers = [
@@ -92,7 +88,8 @@ def main() -> None:
     if kind == "faithfulness":
         answers = [a for a in answers if not refused(a["answer"])]  # nothing to check
         # shortcut: chunk text comes from the current index; judge a run before re-indexing
-        lines = Path(cfg["index"]["chunks"]).read_text().splitlines()
+        idx = cfg["index"]
+        lines = Path(idx["chunks"].format(collection=idx["collection"])).read_text().splitlines()
         chunks = {c["chunk_id"]: c for c in map(json.loads, lines)}
 
     out = run_dir / f"judge_{kind}.jsonl"

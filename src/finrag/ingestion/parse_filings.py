@@ -13,8 +13,9 @@ import re
 import warnings as pywarnings
 from pathlib import Path
 
-import yaml
 from bs4 import BeautifulSoup, NavigableString, XMLParsedAsHTMLWarning
+
+from finrag.config import load_config
 
 # Some 10-Ks are XHTML with an <?xml?> header; the HTML parser handles them fine.
 pywarnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
@@ -143,7 +144,7 @@ def split_sections(lines: list[str]) -> tuple[list[dict], list[str]]:
 
 
 def main() -> None:
-    cfg = yaml.safe_load(Path("config.yaml").read_text())["corpus"]
+    cfg = load_config()["corpus"]
     out_dir = Path(cfg["parsed_dir"])
     out_dir.mkdir(parents=True, exist_ok=True)
 

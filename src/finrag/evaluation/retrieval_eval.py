@@ -10,8 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-import yaml
-
+from finrag.config import load_config
 from finrag.evaluation.score_run import mean
 from finrag.evaluation.scorers import retrieval_scores
 from finrag.retrieval.dense import search
@@ -22,7 +21,7 @@ KEYS = ["section_recall", "doc_recall", "mrr"]
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: python -m finrag.evaluation.retrieval_eval <name>")
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     golden = [
         g
         for g in map(json.loads, Path(cfg["golden"]["path"]).read_text().splitlines())

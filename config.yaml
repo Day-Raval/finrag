@@ -1,18 +1,31 @@
-# Configuration file for the financial data processing project.
+# Annualyst baseline configuration (the v0.1.0 naive RAG).
+# Experiments don't edit this file: each one is a small override in configs/,
+# selected with FINRAG_CONFIG=configs/<name>.yaml (see src/finrag/config.py).
+
+# --- Corpus: which 10-Ks to fetch and where raw/parsed filings live ---
 corpus:
   years: [2021, 2022]
   tickers: [AMD, BA, AXP, PEP, MMM, VZ, CVS, AES, JNJ, GLW, LMT, KO, AWK, GIS, PFE]
-  raw_dir: data/raw
-  parsed_dir: data/parsed
+  raw_dir: data/raw          # downloaded HTML (fetch_filings)
+  parsed_dir: data/parsed    # one JSONL per filing, one record per Item (parse_filings)
   manifest: data/manifest.csv
-# Configuration for corpus and data directories.
-chunking: {strategy: fixed, size: 512, overlap: 64}
+
+# --- Retrieval pipeline ---
+# strategy: fixed = token windows with overlap (step 1.6); section = paragraph/table-aware (1.11)
+# header: true embeds each chunk with "company | FY | Item: title" (1.12)
+chunking: {strategy: fixed, size: 512, overlap: 64, header: false}
 embedding: {provider: local, model: BAAI/bge-small-en-v1.5}
-retrieval: {top_k: 5, hybrid: false, rerank: false}
-# Configuration for generation and evaluation of financial data.
+retrieval: {top_k: 5, hybrid: false, rerank: false}   # hybrid/rerank: planned (1.13, 1.15)
+
+# --- LLMs (Groq free tier: 200K tokens/day per model) ---
+# Answer model. Responses are cached in data/cache/llm/, so unchanged reruns cost 0 tokens.
 generation: {provider: groq, model: openai/gpt-oss-120b, prompt: prompts/answer_v1.md, temperature: 0}
-# Configuration for the judge component - responsible for evaluating the correctness and faithfulness of generated financial data.
-# judge: {provider: groq, model: openai/gpt-oss-20b, temperature: 0, reasoning_effort: high, max_tokens: 1024} - legacy configuration for high reasoning effort
+
+# Judge: correctness vs reference, faithfulness vs retrieved chunks. Validated
+# against 20 hand labels (90% agreement, kappa 0.74). A different model than the
+# generator, with its own daily token pool. reasoning_effort was lowered from high
+# to medium and max_tokens raised to 2048 so long contexts don't run out before
+# the JSON verdict.
 judge:
   provider: groq
   model: openai/gpt-oss-20b
@@ -21,16 +34,24 @@ judge:
   max_tokens: 2048
   correctness_prompt: prompts/judge_correctness_v1.md
   faithfulness_prompt: prompts/judge_faithfulness_v1.md
+
+# Cheap model for high-volume jobs (not used yet; reserved for LLM-written chunk context)
 bulk: {provider: groq, model: openai/gpt-oss-20b}
-# golden data configuration
+
+# --- Evaluation sets ---
 golden:
-  path: evals/golden.jsonl
-  custom: evals/custom.jsonl
-  dev: evals/dev.jsonl
-  financebench_dir: data/financebench
-# Configuration for indexing, retrieval, and evaluation of financial data.
+  path: evals/golden.jsonl            # 79 questions: 57 FinanceBench + 22 custom (build_golden)
+  custom: evals/custom.jsonl          # hand-written cases merged into the golden set
+  dev: evals/dev.jsonl                # fixed 24-question subset for cheap experiments (make_dev)
+  financebench_dir: data/financebench # cached FinanceBench download
+
+# --- Vector index ---
+# Each experiment uses its own collection, so indexes sit side by side in one
+# Qdrant store and nothing is overwritten. {collection} is filled in automatically.
 index:
-  chunks: data/index/chunks.jsonl
+  chunks: data/index/{collection}.jsonl   # chunk texts, used by the faithfulness judge
   qdrant_path: data/index/qdrant
   collection: fixed_512_64
+
+# --- Outputs: one folder per run (answers, scores, judge verdicts, config snapshot) ---
 runs_dir: reports/runs

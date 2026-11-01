@@ -10,7 +10,6 @@ a run cut short by Groq rate limits picks up where it stopped.
 """
 
 import json
-import shutil
 import statistics
 import sys
 from pathlib import Path
@@ -20,6 +19,7 @@ import yaml
 from dotenv import load_dotenv
 
 from finrag.answering.pipeline import answer
+from finrag.config import load_config
 
 
 def main() -> None:
@@ -29,10 +29,10 @@ def main() -> None:
         )
     question_set = sys.argv[2] if len(sys.argv) == 3 else "golden"
     load_dotenv()
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     run_dir = Path(cfg["runs_dir"]) / sys.argv[1]
     run_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy("config.yaml", run_dir / "config.yaml")
+    (run_dir / "config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
     out_path = run_dir / "answers.jsonl"
 
     done = (

@@ -1,0 +1,3 @@
+# structure-aware chunks, 256 tokens
+chunking: {strategy: section, size: 256, header: false}
+index: {collection: section_256}

@@ -11,7 +11,7 @@ import json
 import random
 from pathlib import Path
 
-import yaml
+from finrag.config import load_config
 
 PER_CATEGORY = {
     "comparison": 3, "extraction": 4, "multi_year": 3, "numeric": 4,
@@ -32,7 +32,7 @@ def dev_subset(golden: list[dict]) -> list[dict]:
 
 
 def main() -> None:
-    cfg = yaml.safe_load(Path("config.yaml").read_text())["golden"]
+    cfg = load_config()["golden"]
     golden = [json.loads(x) for x in Path(cfg["path"]).read_text().splitlines()]
     dev = dev_subset(golden)
     Path(cfg["dev"]).write_text("".join(json.dumps(g) + "\n" for g in dev))

@@ -1,0 +1,3 @@
+# Structure-aware chunks, 512 tokens + contextual header
+chunking: {strategy: section, size: 512, header: true}
+index: {collection: section_512_hdr}

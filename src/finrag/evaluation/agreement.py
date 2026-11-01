@@ -12,7 +12,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-import yaml
+from finrag.config import load_config
 
 LABELS = ["correct", "partial", "incorrect", "refused"]
 
@@ -29,7 +29,7 @@ def cohens_kappa(a: list, b: list) -> float:
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: python -m finrag.evaluation.agreement <run>")
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     run_dir = Path(cfg["runs_dir"]) / sys.argv[1]
     load = lambda name: {
         r["id"]: r for r in map(json.loads, (run_dir / name).read_text().splitlines())

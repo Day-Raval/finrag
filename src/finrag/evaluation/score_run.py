@@ -11,8 +11,7 @@ import statistics
 import sys
 from pathlib import Path
 
-import yaml
-
+from finrag.config import load_config
 from finrag.evaluation.scorers import (
     has_citation,
     numeric_match,
@@ -61,7 +60,7 @@ def summarize(scores: list[dict]) -> dict:
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: python -m finrag.evaluation.score_run <run_name>")
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     run_dir = Path(cfg["runs_dir"]) / sys.argv[1]
     golden = {
         g["id"]: g

@@ -13,8 +13,7 @@ import sys
 import textwrap
 from pathlib import Path
 
-import yaml
-
+from finrag.config import load_config
 from finrag.evaluation.scorers import refused
 
 KEYS = {"c": "correct", "p": "partial", "i": "incorrect", "r": "refused"}
@@ -46,7 +45,7 @@ def show(a: dict, n: int, total: int) -> None:
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: python -m finrag.evaluation.label <run>")
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     run_dir = Path(cfg["runs_dir"]) / sys.argv[1]
     answers = [
         json.loads(x) for x in (run_dir / "answers.jsonl").read_text().splitlines()

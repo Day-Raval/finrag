@@ -1,0 +1,527 @@
+{
+  "name": "fixed_512_64_hdr",
+  "top_k": 5,
+  "collection": "fixed_512_64_hdr",
+  "overall": {
+    "section_recall": 0.652,
+    "doc_recall": 0.971,
+    "mrr": 0.408
+  },
+  "by_category": {
+    "comparison": {
+      "section_recall": 0.417,
+      "doc_recall": 0.667,
+      "mrr": 0.214
+    },
+    "extraction": {
+      "section_recall": 0.875,
+      "doc_recall": 1.0,
+      "mrr": 0.639
+    },
+    "multi_year": {
+      "section_recall": 0.75,
+      "doc_recall": 1.0,
+      "mrr": 0.422
+    },
+    "numeric": {
+      "section_recall": 0.75,
+      "doc_recall": 1.0,
+      "mrr": 0.424
+    },
+    "open": {
+      "section_recall": 0.615,
+      "doc_recall": 1.0,
+      "mrr": 0.381
+    },
+    "reasoning": {
+      "section_recall": 0.469,
+      "doc_recall": 1.0,
+      "mrr": 0.307
+    }
+  },
+  "per_question": [
+    {
+      "id": "fb_00005",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00070",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00215",
+      "category": "reasoning",
+      "section_recall": 0.5,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_00216",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00222",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00302",
+      "category": "open",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00464",
+      "category": "open",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00476",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_00494",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.2
+    },
+    {
+      "id": "fb_00499",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00517",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_00540",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_00563",
+      "category": "open",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00566",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.25
+    },
+    {
+      "id": "fb_00585",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_00669",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.25
+    },
+    {
+      "id": "fb_00678",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_00702",
+      "category": "open",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00711",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_00720",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00723",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.25
+    },
+    {
+      "id": "fb_00735",
+      "category": "extraction",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00757",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_00790",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_00859",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_00917",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_00956",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "fb_00995",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_01009",
+      "category": "extraction",
+      "section_recall": 0.5,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_01028",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_01091",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_01107",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "fb_01198",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "fb_01226",
+      "category": "reasoning",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "fb_01244",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_01279",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.25
+    },
+    {
+      "id": "fb_01290",
+      "category": "reasoning",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_01319",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_01328",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_01346",
+      "category": "numeric",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_01351",
+      "category": "numeric",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_01865",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.25
+    },
+    {
+      "id": "fb_01964",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_01981",
+      "category": "open",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_02024",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_02416",
+      "category": "open",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_02981",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_03031",
+      "category": "numeric",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_03620",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.2
+    },
+    {
+      "id": "fb_03718",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "fb_04254",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_04481",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_04980",
+      "category": "extraction",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_06272",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "id": "fb_09724",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "fb_10136",
+      "category": "numeric",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "fb_10420",
+      "category": "numeric",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "x_cmp_01",
+      "category": "comparison",
+      "section_recall": 0.5,
+      "doc_recall": 0.5,
+      "mrr": 0.2
+    },
+    {
+      "id": "x_cmp_02",
+      "category": "comparison",
+      "section_recall": 0.5,
+      "doc_recall": 0.5,
+      "mrr": 0.25
+    },
+    {
+      "id": "x_cmp_03",
+      "category": "comparison",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "x_cmp_04",
+      "category": "comparison",
+      "section_recall": 0.5,
+      "doc_recall": 0.5,
+      "mrr": 0.5
+    },
+    {
+      "id": "x_cmp_05",
+      "category": "comparison",
+      "section_recall": 0.0,
+      "doc_recall": 0.5,
+      "mrr": 0.0
+    },
+    {
+      "id": "x_cmp_06",
+      "category": "comparison",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "x_yoy_01",
+      "category": "multi_year",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "x_yoy_02",
+      "category": "multi_year",
+      "section_recall": 0.0,
+      "doc_recall": 1.0,
+      "mrr": 0.0
+    },
+    {
+      "id": "x_yoy_03",
+      "category": "multi_year",
+      "section_recall": 0.5,
+      "doc_recall": 1.0,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "x_yoy_04",
+      "category": "multi_year",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.5
+    },
+    {
+      "id": "x_yoy_05",
+      "category": "multi_year",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.2
+    },
+    {
+      "id": "x_yoy_06",
+      "category": "multi_year",
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 1.0
+    }
+  ]
+}

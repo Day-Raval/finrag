@@ -1,7 +1,7 @@
 """Fixed-size token chunking of parsed 10-K sections (baseline strategy)."""
 
 import json
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 
@@ -23,11 +23,13 @@ def fixed_token_chunks(text: str, tokenizer, size: int, overlap: int) -> list[st
     ]
 
 
-def iter_chunks(parsed_dir: str, tokenizer, size: int, overlap: int) -> Iterator[dict]:
-    """One record per chunk, carrying the metadata citations need."""
+def iter_chunks(parsed_dir: str, split: Callable[[str], list[str]]) -> Iterator[dict]:
+    """One record per chunk, carrying the metadata citations need.
+    `split` turns a section's text into chunk texts (fixed or section strategy).
+    """
     for path in sorted(Path(parsed_dir).glob("*.jsonl")):
         for section in map(json.loads, path.open()):
-            pieces = fixed_token_chunks(section["text"], tokenizer, size, overlap)
+            pieces = split(section["text"])
             for n, text in enumerate(pieces):
                 yield {
                     "chunk_id": f"{section['doc_id']}:{section['item']}:{n:04d}",

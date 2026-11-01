@@ -7,14 +7,14 @@ import json
 import sys
 from pathlib import Path
 
-import yaml
+from finrag.config import load_config
 
 
 def main() -> None:
     if len(sys.argv) != 3:
         raise SystemExit('usage: python -m finrag.evaluation.lookup KO_2022 "phrase"')
     doc_id, phrase = sys.argv[1], sys.argv[2].lower()
-    parsed_dir = yaml.safe_load(Path("config.yaml").read_text())["corpus"]["parsed_dir"]
+    parsed_dir = load_config()["corpus"]["parsed_dir"]
     path = Path(parsed_dir) / f"{doc_id}.jsonl"
     if not path.exists():
         raise SystemExit(f"{path} not found (doc ids look like KO_2022)")

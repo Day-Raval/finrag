@@ -12,8 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-import yaml
-
+from finrag.config import load_config
 from finrag.evaluation.judge import SCORES
 from finrag.evaluation.score_run import mean
 
@@ -69,7 +68,7 @@ def main() -> None:
         raise SystemExit(
             "usage: python -m finrag.evaluation.diff <run_a> <run_b> [max_drop]"
         )
-    cfg = yaml.safe_load(Path("config.yaml").read_text())
+    cfg = load_config()
     name_a, name_b = sys.argv[1], sys.argv[2]
     max_drop = float(sys.argv[3]) if len(sys.argv) == 4 else 0.05
     a, b = (load(Path(cfg["runs_dir"]) / n) for n in (name_a, name_b))

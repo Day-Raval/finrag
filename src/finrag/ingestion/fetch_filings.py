@@ -15,8 +15,9 @@ from itertools import chain
 from pathlib import Path
 
 import requests
-import yaml
 from dotenv import load_dotenv
+
+from finrag.config import load_config
 
 MIN_INTERVAL = 0.12  # SEC fair-access rule: at most 10 requests per second
 RETRY_STATUS = {429, 500, 502, 503, 504}
@@ -87,7 +88,7 @@ def find_10ks(edgar: Edgar, cik: int, years: set[int]) -> tuple[str, dict[int, d
 
 def main() -> None:
     load_dotenv()
-    cfg = yaml.safe_load(Path("config.yaml").read_text())["corpus"]
+    cfg = load_config()["corpus"]
     years = set(cfg["years"])
     raw_dir = Path(cfg["raw_dir"])
     raw_dir.mkdir(parents=True, exist_ok=True)

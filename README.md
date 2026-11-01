@@ -112,7 +112,7 @@ python -m finrag.indexing.build_index
 
 The fetcher retrieves the configured FY2021 and FY2022 10-Ks for 15 companies (30 filings), skips amendments, respects SEC request limits, and writes filing metadata and SHA-256 checksums to `data/manifest.csv`. Fiscal years are based on the filing period end, with first-week-of-January ends assigned to the prior fiscal year for 52/53-week companies. Existing raw filings are skipped on reruns.
 
-The parser writes one JSONL record per 10-K Item under `data/parsed/`, including a `COVER` section for cover-page facts, preserving section metadata and formatting tables as Markdown. Its report flags filings that need review before downstream processing. The index builder tokenizes each parsed section into overlapping 512-token chunks, embeds them with `BAAI/bge-small-en-v1.5`, writes the chunks to `data/index/chunks.jsonl`, and rebuilds the local Qdrant collection. All generated files under `data/` are gitignored; see [`src/finrag/ingestion/README.md`](src/finrag/ingestion/README.md) for parsing details, output fields, and known filing quirks.
+The parser writes one JSONL record per 10-K Item under `data/parsed/`, including a `COVER` section for cover-page facts, preserving section metadata and formatting tables as Markdown. Its report flags filings that need review before downstream processing. The index builder tokenizes each parsed section into overlapping 512-token chunks, embeds them with `BAAI/bge-small-en-v1.5`, writes the chunks to `data/index/<collection>.jsonl`, and rebuilds the local Qdrant collection. All generated files under `data/` are gitignored; see [`src/finrag/ingestion/README.md`](src/finrag/ingestion/README.md) for parsing details, output fields, and known filing quirks.
 
 ### Ask a question
 
@@ -264,7 +264,15 @@ Runtime behavior is centralized in [`config.yaml`](config.yaml):
 - `index`: local chunk export and Qdrant collection settings
 - `runs_dir`: benchmark-output directory
 
-Keep model and retrieval changes in this file so experiments remain reviewable and reproducible.
+`config.yaml` is the baseline. Each experiment is a small file in [`configs/`](configs/) that overrides only the keys it changes, selected with the `FINRAG_CONFIG` environment variable:
+
+```bash
+FINRAG_CONFIG=configs/section_512.yaml python -m finrag.indexing.build_index
+FINRAG_CONFIG=configs/section_512.yaml python -m finrag.evaluation.retrieval_eval section_512
+```
+
+Every module reads the merged configuration, and `run_golden` saves it with each run, so a run's `config.yaml` snapshot records exactly which experiment produced it. 
+Each experiment's `index.collection` matches its file name, so its Qdrant collection and `data/index/<collection>.jsonl` chunk file sit beside the baseline's instead of replacing them.
 
 ## Quality contract
 

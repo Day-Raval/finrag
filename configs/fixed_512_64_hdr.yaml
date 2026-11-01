@@ -1,0 +1,4 @@
+# isolated: the baseline chunks + contextual header
+# Overrides config.yaml. Use: FINRAG_CONFIG=configs/fixed_512_64_hdr.yaml python -m ...
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
