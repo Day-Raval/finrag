@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 
 from finrag.config import load_config
 from finrag.generation.answer import generate
-from finrag.retrieval.dense import search
+# from finrag.retrieval.dense import search - old
+from finrag.retrieval import search       # - new
 
 
 def answer(question: str, cfg: dict) -> dict:

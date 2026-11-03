@@ -2,8 +2,8 @@
 
 Run from the repo root:  python -m finrag.evaluation.retrieval_eval dense_fixed_512_64
 
-Costs zero Groq tokens, so use it for every chunking / search experiment
-(steps 1.11-1.15). Saves reports/retrieval/<name>.json.
+Costs zero Groq tokens, so use it for every chunking / search experiment. 
+Saves reports/retrieval/<name>.json.
 """
 
 import json
@@ -13,7 +13,8 @@ from pathlib import Path
 from finrag.config import load_config
 from finrag.evaluation.score_run import mean
 from finrag.evaluation.scorers import retrieval_scores
-from finrag.retrieval.dense import search
+# from finrag.retrieval.dense import search - old
+from finrag.retrieval import search       # - new
 
 KEYS = ["section_recall", "doc_recall", "mrr"]
 

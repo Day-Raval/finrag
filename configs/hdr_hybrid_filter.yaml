@@ -1,0 +1,5 @@
+# hybrid BM25 + dense (RRF) with company / fiscal-year filter, on the fixed_512_64_hdr index (no rebuild)
+# Overrides config.yaml. Use: FINRAG_CONFIG=configs/hdr_hybrid_filter.yaml python -m ...
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
+retrieval: {hybrid: true, filter: true}

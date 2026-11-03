@@ -15,7 +15,11 @@ corpus:
 # header: true embeds each chunk with "company | FY | Item: title" (1.12)
 chunking: {strategy: fixed, size: 512, overlap: 64, header: false}
 embedding: {provider: local, model: BAAI/bge-small-en-v1.5}
-retrieval: {top_k: 5, hybrid: false, rerank: false}   # hybrid/rerank: planned (1.13, 1.15)
+# retrieval: {top_k: 5, hybrid: false, rerank: false}   # hybrid/rerank: planned  - - -> old
+
+# hybrid: BM25 + dense fused with RRF over `candidates` each
+# filter: restrict to the companies/years the question names; rerank: planned
+retrieval: {top_k: 5, hybrid: false, filter: false, rerank: false, candidates: 50}
 
 # --- LLMs (Groq free tier: 200K tokens/day per model) ---
 # Answer model. Responses are cached in data/cache/llm/, so unchanged reruns cost 0 tokens.

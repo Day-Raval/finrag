@@ -19,10 +19,13 @@ def test_merge_overrides_only_given_keys():
 def test_every_experiment_config_loads(monkeypatch):
     from pathlib import Path
 
+    chunking_by_collection = {}
     for path in sorted(Path("configs").glob("*.yaml")):
         monkeypatch.setenv("FINRAG_CONFIG", str(path))
         cfg = load_config()
-        assert cfg["index"]["collection"] == path.stem, path  # file name = collection
+        # retrieval-only configs reuse an index; they must not change how it was chunked
+        seen = chunking_by_collection.setdefault(cfg["index"]["collection"], cfg["chunking"])
+        assert seen == cfg["chunking"], path
         assert cfg["chunking"]["strategy"] in ("fixed", "section"), path
         assert cfg["index"]["qdrant_path"] and cfg["golden"]["path"]  # base keys kept
         assert yaml.safe_dump(cfg)  # run_golden can save the snapshot
