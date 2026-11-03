@@ -51,4 +51,6 @@ chunks it raised section recall@5 from 0.543 to 0.652, document recall from
   limits scalability for a substantially larger corpus.
 - Changing chunking settings without changing `index.collection` overwrites the
   previous index under the same name; keep one collection per experiment.
-- There is no payload filtering or index-quality check at build time.
+- There is no Qdrant payload index or index-quality check at build time;
+  retrieval filters on the stored `ticker` and `fiscal_year` payload fields by
+  scanning, which is fine at this corpus size.

@@ -2,7 +2,7 @@
 
 This package runs the baseline retrieval-to-answer pipeline.
 
-[`pipeline.py`](pipeline.py) retrieves dense matches, generates a grounded Groq
+[`pipeline.py`](pipeline.py) retrieves matching chunks, generates a grounded Groq
 answer, and returns timing, token usage, and retrieved chunk IDs. Query one
 question after building the index:
 
@@ -40,7 +40,8 @@ verdicts.
 
 ## How it works
 
-`answer()` measures retrieval time, calls dense retrieval, passes the returned
+`answer()` measures retrieval time, calls `finrag.retrieval.search` (dense,
+or hybrid/filtered when the config enables it), passes the returned
 chunks to generation, and combines the answer metrics with compact retrieved
 chunk identifiers and scores. Its `total_s` is retrieval time plus generation
 latency; for a cached answer the original generation latency is kept, so

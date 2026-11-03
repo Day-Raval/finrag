@@ -4,7 +4,7 @@
 
 **Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and the first retrieval experiments: a contextual chunk header raised section recall from 0.543 to 0.652. The baseline's results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
+> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and retrieval experiments: a contextual chunk header, hybrid BM25 + dense search, and a company/fiscal-year filter together raised section recall from 0.543 to 0.797 and MRR from 0.329 to 0.658. The baseline's results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
 
 ## What it is for
 
@@ -208,10 +208,16 @@ Each experiment changes one setting on top of the baseline and is scored with `r
 | Section-aware chunks, 512 tokens (1.11) | [`section_512`](configs/section_512.yaml) | 0.522 | 0.848 | 0.343 |
 | Section-aware chunks, 256 tokens (1.11) | [`section_256`](configs/section_256.yaml) | 0.551 | 0.841 | 0.341 |
 | Section-aware 512 + contextual header | [`section_512_hdr`](configs/section_512_hdr.yaml) | 0.551 | 0.928 | 0.361 |
-| **Fixed 512/64 + contextual header (1.12)** | [`fixed_512_64_hdr`](configs/fixed_512_64_hdr.yaml) | **0.652** | **0.971** | **0.408** |
+| Fixed 512/64 + contextual header (1.12) | [`fixed_512_64_hdr`](configs/fixed_512_64_hdr.yaml) | 0.652 | 0.971 | 0.408 |
+| Header + hybrid BM25/dense (1.13) | [`hdr_hybrid`](configs/hdr_hybrid.yaml) | 0.623 | 0.884 | 0.434 |
+| Header + company/year filter (1.14) | [`hdr_filter`](configs/hdr_filter.yaml) | 0.739 | 0.978 | 0.545 |
+| **Header + hybrid + filter (1.13 + 1.14)** | [`hdr_hybrid_filter`](configs/hdr_hybrid_filter.yaml) | **0.797** | **0.986** | **0.658** |
 
-- **Contextual header: clear win.** Embedding each chunk as `company | FY | Item: title` plus its text raised section recall by 0.109 and doc recall to 0.971, so the right company and fiscal year are now almost always retrieved. It is built from existing metadata and costs no LLM tokens. `fixed_512_64_hdr` is the base for later experiments.
+- **Contextual header: clear win.** Embedding each chunk as `company | FY | Item: title` plus its text raised section recall by 0.109 and doc recall to 0.971, so the right company and fiscal year are now almost always retrieved. It is built from existing metadata and costs no LLM tokens.
 - **Section-aware chunking: no gain.** Keeping paragraphs and table rows intact tied the baseline at both sizes and weakened the header's effect. A likely cause is that section chunks have no overlap, so content near a boundary appears in only one chunk.
+- **Hybrid search alone: worse.** Fusing BM25 with dense search (reciprocal rank fusion over 50 candidates each) lowered doc recall to 0.884: 10-Ks share the same vocabulary ("total assets", "net revenue"), so keyword matches pull in other companies' filings. MRR still rose slightly.
+- **Company/fiscal-year filter: the biggest single gain.** Rules read the company names and fiscal years a question mentions (`FY22`, `FY 2021`, `JnJ`, `AMEX`) and restrict search to those filings, falling back to unfiltered search when a question names none. On the golden set it narrows all 69 answerable questions without excluding any gold evidence filing.
+- **Hybrid + filter: best so far.** With the filter removing other companies' chunks, BM25's exact-term matching finds the right section within the right filing: section recall +0.145 and MRR +0.25 over the header alone, so the evidence usually ranks first or second. `hdr_hybrid_filter` is the base for later experiments. Comparison (0.667) and reasoning (0.75) questions remain weakest, since they need evidence from more than one filing or section.
 - Answer-level effects (correctness, refusals) have not been measured for these configurations yet.
 
 ## Repository layout
@@ -239,7 +245,10 @@ Each experiment changes one setting on top of the baseline and is scored with `r
 │       ├── indexing/
 │       │   └── build_index.py    # Local Qdrant index builder
 │       ├── retrieval/
-│       │   └── dense.py          # Dense Qdrant retrieval
+│       │   ├── __init__.py       # search(): dense, optionally hybrid and filtered
+│       │   ├── dense.py          # Dense Qdrant retrieval with payload filter
+│       │   ├── hybrid.py         # BM25 search and reciprocal rank fusion
+│       │   └── filters.py        # Company / fiscal-year extraction from questions
 │       ├── generation/
 │       │   ├── answer.py         # Grounded Groq answer generation
 │       │   └── cache.py          # Disk cache for LLM calls
@@ -279,7 +288,7 @@ Runtime behavior is centralized in [`config.yaml`](config.yaml):
 - `corpus`: filing years and manifest location
 - `chunking`: chunk strategy (`fixed` or `section`), size, overlap, and contextual `header`
 - `embedding`: embedding provider and model
-- `retrieval`: result count and retrieval enhancements
+- `retrieval`: result count (`top_k`), hybrid BM25 + dense fusion (`hybrid`, `candidates`), company/fiscal-year filtering (`filter`), and planned reranking
 - `generation` and `judge`: Groq models and decoding settings
 - `golden`: golden-set, custom-case, dev-subset, and FinanceBench cache locations
 - `index`: local chunk export and Qdrant collection settings
@@ -290,9 +299,12 @@ Runtime behavior is centralized in [`config.yaml`](config.yaml):
 ```bash
 FINRAG_CONFIG=configs/section_512.yaml python -m finrag.indexing.build_index
 FINRAG_CONFIG=configs/section_512.yaml python -m finrag.evaluation.retrieval_eval section_512
+
+# retrieval-only experiments reuse an existing index: no rebuild
+FINRAG_CONFIG=configs/hdr_hybrid_filter.yaml python -m finrag.evaluation.retrieval_eval hdr_hybrid_filter
 ```
 
-Every module reads the merged configuration, and `run_golden` saves it with each run, so a run's `config.yaml` snapshot records exactly which experiment produced it. Each experiment's `index.collection` matches its file name, so its Qdrant collection and `data/index/<collection>.jsonl` chunk file sit beside the baseline's instead of replacing them.
+Every module reads the merged configuration, and `run_golden` saves it with each run, so a run's `config.yaml` snapshot records exactly which experiment produced it. An experiment that changes chunking names its own `index.collection` after its file, so its Qdrant collection and `data/index/<collection>.jsonl` chunk file sit beside the baseline's instead of replacing them. An experiment that changes only retrieval (the `hdr_*` files) reuses an existing collection with identical chunking settings, which `tests/test_config.py` checks.
 
 ## Quality contract
 
@@ -326,7 +338,7 @@ The source package is separated by pipeline stage:
 | `finrag.corpus` | Create fixed-token or section-aware chunks while preserving citation metadata. |
 | `finrag.embeddings` | Load and use the shared embedding model for chunks and questions. |
 | `finrag.indexing` | Embed chunks and rebuild the local Qdrant collection. |
-| `finrag.retrieval` | Return the highest-scoring dense matches from the index. |
+| `finrag.retrieval` | Return the top matches: dense, optionally fused with BM25 and filtered to the companies and years a question names. |
 | `finrag.generation` | Format cited context, call the Groq answer model, and cache LLM responses. |
 | `finrag.answering` | Orchestrate a question, the golden set, or the dev subset through retrieval and generation. |
 | `finrag.evaluation` | Build the golden and dev sets, score and compare runs, benchmark retrieval, judge answers, and validate the judge against hand labels. |
