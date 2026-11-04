@@ -4,7 +4,7 @@
 
 **Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and retrieval experiments: a contextual chunk header, hybrid BM25 + dense search, and a company/fiscal-year filter together raised section recall from 0.543 to 0.797 and MRR from 0.329 to 0.658. The baseline's results expose substantial answer-quality and false-refusal gaps; it is not production-ready.
+> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and retrieval experiments: a contextual chunk header, hybrid BM25 + dense search, a company/fiscal-year filter, and per-company coverage raised section recall from 0.543 to 0.804, doc recall to 1.0, and MRR from 0.329 to 0.658. On the dev subset this nearly doubled judged correctness (0.214 to 0.381) and cut false refusals from 0.619 to 0.381, with no regressions. Refusals with the right filing already in context remain the main gap; the system is not production-ready.
 
 ## What it is for
 
@@ -211,14 +211,35 @@ Each experiment changes one setting on top of the baseline and is scored with `r
 | Fixed 512/64 + contextual header (1.12) | [`fixed_512_64_hdr`](configs/fixed_512_64_hdr.yaml) | 0.652 | 0.971 | 0.408 |
 | Header + hybrid BM25/dense (1.13) | [`hdr_hybrid`](configs/hdr_hybrid.yaml) | 0.623 | 0.884 | 0.434 |
 | Header + company/year filter (1.14) | [`hdr_filter`](configs/hdr_filter.yaml) | 0.739 | 0.978 | 0.545 |
-| **Header + hybrid + filter (1.13 + 1.14)** | [`hdr_hybrid_filter`](configs/hdr_hybrid_filter.yaml) | **0.797** | **0.986** | **0.658** |
+| Header + hybrid + filter (1.13 + 1.14) | [`hdr_hybrid_filter`](configs/hdr_hybrid_filter.yaml) | 0.797 | 0.986 | 0.658 |
+| + MiniLM cross-encoder rerank (1.15) | [`hdr_hf_rerank`](configs/hdr_hf_rerank.yaml) | 0.783 | 0.986 | 0.624 |
+| + bge-reranker-base rerank (1.15) | [`hdr_hf_rerank_bge`](configs/hdr_hf_rerank_bge.yaml) | 0.812 | 0.978 | 0.538 |
+| **+ per-company coverage (1.16)** | [`hdr_hf_decomp_company`](configs/hdr_hf_decomp_company.yaml) | **0.804** | **1.000** | **0.658** |
+| + per-filing coverage (1.16) | [`hdr_hf_decomp_filing`](configs/hdr_hf_decomp_filing.yaml) | 0.804 | 1.000 | 0.658 |
 
 - **Contextual header: clear win.** Embedding each chunk as `company | FY | Item: title` plus its text raised section recall by 0.109 and doc recall to 0.971, so the right company and fiscal year are now almost always retrieved. It is built from existing metadata and costs no LLM tokens.
 - **Section-aware chunking: no gain.** Keeping paragraphs and table rows intact tied the baseline at both sizes and weakened the header's effect. A likely cause is that section chunks have no overlap, so content near a boundary appears in only one chunk.
 - **Hybrid search alone: worse.** Fusing BM25 with dense search (reciprocal rank fusion over 50 candidates each) lowered doc recall to 0.884: 10-Ks share the same vocabulary ("total assets", "net revenue"), so keyword matches pull in other companies' filings. MRR still rose slightly.
 - **Company/fiscal-year filter: the biggest single gain.** Rules read the company names and fiscal years a question mentions (`FY22`, `FY 2021`, `JnJ`, `AMEX`) and restrict search to those filings, falling back to unfiltered search when a question names none. On the golden set it narrows all 69 answerable questions without excluding any gold evidence filing.
-- **Hybrid + filter: best so far.** With the filter removing other companies' chunks, BM25's exact-term matching finds the right section within the right filing: section recall +0.145 and MRR +0.25 over the header alone, so the evidence usually ranks first or second. `hdr_hybrid_filter` is the base for later experiments. Comparison (0.667) and reasoning (0.75) questions remain weakest, since they need evidence from more than one filing or section.
-- Answer-level effects (correctness, refusals) have not been measured for these configurations yet.
+- **Hybrid + filter: best so far.** With the filter removing other companies' chunks, BM25's exact-term matching finds the right section within the right filing: section recall +0.145 and MRR +0.25 over the header alone, so the evidence usually ranks first or second.
+- **Cross-encoder reranking: no gain, kept off.** Reranking the 50 hybrid + filter candidates helped prose questions (bge raised reasoning section recall from 0.75 to 0.94) but misranked Markdown tables (extraction MRR fell from 0.79 to 0.46), so overall MRR dropped with both rerankers. bge also added about 2.4 s at p95 on an RTX 4050 GPU (34 s on CPU). Section recall@3 (0.717 vs 0.797 at five) kept the answer prompt at five chunks.
+- **Per-company coverage: closes the comparison gap.** When a question names several companies and one has no chunk in the top five, that company's best chunk replaces the fifth result. A forced split was avoided because only 9 of the 20 golden questions that name two filings need evidence from both: a 10-K also reports the prior year. Comparison doc recall rose from 0.833 to 1.0 with every other category unchanged; splitting by filing (company x year) added nothing. `hdr_hf_decomp_company` is the current best configuration.
+
+### Answer quality after the retrieval steps
+
+The dev subset was answered with `hdr_hf_decomp_company` and judged like the baseline (21 answerable questions; the run is in [`reports/runs/dev_retrieval`](reports/runs/dev_retrieval)). The prompt and models are unchanged, so the difference comes from retrieval alone.
+
+| Dev subset | `dev_baseline` | `dev_retrieval` | Change |
+| --- | ---: | ---: | ---: |
+| Judged correctness | 0.214 | 0.381 | +0.167 |
+| False-refusal rate | 0.619 | 0.381 | -0.238 |
+| Citation rate | 0.286 | 0.571 | +0.285 |
+| Numeric match | 0.259 | 0.389 | +0.130 |
+| Faithfulness (non-refused) | — | 0.923 | |
+| p95 latency | 32.0 s | 28.1 s | |
+| Tokens per question | 3,043 | 3,098 | |
+
+`diff` found five improved answers and no regressions. With every evidence filing now retrieved, 8 of 21 answerable questions are still refused and comparison questions score 0.167, so the next step is the answer prompt rather than retrieval.
 
 ## Repository layout
 
@@ -245,10 +266,12 @@ Each experiment changes one setting on top of the baseline and is scored with `r
 │       ├── indexing/
 │       │   └── build_index.py    # Local Qdrant index builder
 │       ├── retrieval/
-│       │   ├── __init__.py       # search(): dense, optionally hybrid and filtered
+│       │   ├── __init__.py       # search(): dense, optionally hybrid, filtered, reranked, covered
 │       │   ├── dense.py          # Dense Qdrant retrieval with payload filter
 │       │   ├── hybrid.py         # BM25 search and reciprocal rank fusion
-│       │   └── filters.py        # Company / fiscal-year extraction from questions
+│       │   ├── filters.py        # Company / fiscal-year extraction from questions
+│       │   ├── reranker.py       # Optional cross-encoder reranking (off by default)
+│       │   └── decompose.py      # Per-company coverage for multi-company questions
 │       ├── generation/
 │       │   ├── answer.py         # Grounded Groq answer generation
 │       │   └── cache.py          # Disk cache for LLM calls
@@ -288,7 +311,7 @@ Runtime behavior is centralized in [`config.yaml`](config.yaml):
 - `corpus`: filing years and manifest location
 - `chunking`: chunk strategy (`fixed` or `section`), size, overlap, and contextual `header`
 - `embedding`: embedding provider and model
-- `retrieval`: result count (`top_k`), hybrid BM25 + dense fusion (`hybrid`, `candidates`), company/fiscal-year filtering (`filter`), and planned reranking
+- `retrieval`: result count (`top_k`), hybrid BM25 + dense fusion (`hybrid`, `candidates`), company/fiscal-year filtering (`filter`), cross-encoder reranking (`rerank`, `reranker`), and per-company coverage (`decompose`)
 - `generation` and `judge`: Groq models and decoding settings
 - `golden`: golden-set, custom-case, dev-subset, and FinanceBench cache locations
 - `index`: local chunk export and Qdrant collection settings
@@ -338,7 +361,7 @@ The source package is separated by pipeline stage:
 | `finrag.corpus` | Create fixed-token or section-aware chunks while preserving citation metadata. |
 | `finrag.embeddings` | Load and use the shared embedding model for chunks and questions. |
 | `finrag.indexing` | Embed chunks and rebuild the local Qdrant collection. |
-| `finrag.retrieval` | Return the top matches: dense, optionally fused with BM25 and filtered to the companies and years a question names. |
+| `finrag.retrieval` | Return the top matches: dense, optionally fused with BM25, filtered to the companies and years a question names, reranked, and covering every named company. |
 | `finrag.generation` | Format cited context, call the Groq answer model, and cache LLM responses. |
 | `finrag.answering` | Orchestrate a question, the golden set, or the dev subset through retrieval and generation. |
 | `finrag.evaluation` | Build the golden and dev sets, score and compare runs, benchmark retrieval, judge answers, and validate the judge against hand labels. |

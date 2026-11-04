@@ -44,7 +44,8 @@ python -m finrag.evaluation.retrieval_eval dense_fixed_512_64
 `reports/runs/<run>/`. It reports evidence-section and document recall, MRR,
 numeric matching within 1%, citation presence, refusal behavior, latency, and
 tokens. `retrieval_eval` writes the same retrieval metrics for answerable
-questions to `reports/retrieval/<name>.json`.
+questions to `reports/retrieval/<name>.json`, plus section recall@3 (what a
+top-3 prompt would see) and search latency p50/p95 after one warm-up query.
 
 The checked-in `baseline` result answered 79/79 cases. Dense top-5 retrieval
 with fixed 512-token chunks and 64-token overlap achieved 0.543 section recall,
