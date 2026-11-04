@@ -1,0 +1,6 @@
+# Header + hybrid + filter, reranked by a larger cross-encoder
+# (BAAI/bge-reranker-base, 278M params: usually more accurate, slower). No rebuild.
+# Overrides config.yaml. Use: FINRAG_CONFIG=configs/hdr_hf_rerank_bge.yaml python -m ...
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
+retrieval: {hybrid: true, filter: true, rerank: true, reranker: BAAI/bge-reranker-base}

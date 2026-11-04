@@ -1,0 +1,6 @@
+# Header + hybrid + filter, reranked by a small cross-encoder
+# (cross-encoder/ms-marco-MiniLM-L-6-v2, 22M params, fast on CPU). No rebuild.
+# Overrides config.yaml. Use: FINRAG_CONFIG=configs/hdr_hf_rerank.yaml python -m ...
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
+retrieval: {hybrid: true, filter: true, rerank: true}

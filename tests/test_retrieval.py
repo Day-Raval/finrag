@@ -69,3 +69,38 @@ def test_hybrid_search_end_to_end(tmp_path, monkeypatch):
     cfg["retrieval"] = {"top_k": 1}  # plain dense, unchanged default
     assert search("Coca Cola total assets in FY2022?", cfg)[0]["chunk_id"] == "PEP_2022:7:0000"
     dense.get_client.cache_clear()
+
+
+class FakeCrossEncoder:
+    """Scores a pair by whether the chunk contains the question's last word."""
+
+    def predict(self, pairs, batch_size):
+        return [float(q.split()[-1].strip("?") in text) for q, text in pairs]
+
+
+def test_rerank_reorders_and_trims(monkeypatch):
+    from finrag.retrieval import reranker as rr
+
+    monkeypatch.setattr(rr, "get_model", lambda name: FakeCrossEncoder())
+    cfg = {"chunking": {"header": False}, "retrieval": {"reranker": "fake"}}
+    chunks = [chunk(f"c{i}", "KO", 2022, t) for i, t in enumerate(["revenue", "dividends", "capex"])]
+    out = rr.rerank("What was capex?", chunks, cfg, k=2)
+    assert [c["chunk_id"] for c in out] == ["c2", "c0"]  # match first, then original order
+    assert out[0]["score"] == 1.0
+    assert rr.rerank("q", [], cfg, k=2) == []
+
+
+def test_search_reranks_a_wider_pool(monkeypatch):
+    from finrag import retrieval
+
+    seen = {}
+
+    def fake_dense(question, cfg, k, flt):
+        seen["k"] = k
+        return [{"chunk_id": str(i)} for i in range(k)]
+
+    monkeypatch.setattr(retrieval.dense, "search", fake_dense)
+    monkeypatch.setattr(retrieval, "rerank", lambda q, hits, cfg, k: hits[::-1][:k])
+    cfg = {"retrieval": {"top_k": 3, "rerank": True, "candidates": 20}}
+    out = retrieval.search("q", cfg)
+    assert seen["k"] == 20 and [c["chunk_id"] for c in out] == ["19", "18", "17"]
