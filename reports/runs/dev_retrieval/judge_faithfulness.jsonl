@@ -1,0 +1,14 @@
+{"id": "fb_00070", "category": "reasoning", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3261}
+{"id": "fb_00464", "category": "open", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3762}
+{"id": "fb_00494", "category": "open", "claims": 1, "unsupported": [], "verdict": "faithful", "tokens": 3134}
+{"id": "fb_00517", "category": "reasoning", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3360}
+{"id": "fb_00678", "category": "numeric", "verdict": "error", "raw": "", "tokens": 5558}
+{"id": "fb_01244", "category": "extraction", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3218}
+{"id": "fb_01319", "category": "extraction", "claims": 2, "unsupported": ["The income statements for FY\u202f2022 do not contain a separate line item for restructuring costs."], "verdict": "unfaithful", "tokens": 3628}
+{"id": "fb_01346", "category": "numeric", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3255}
+{"id": "fb_01351", "category": "numeric", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3210}
+{"id": "fb_01865", "category": "open", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3464}
+{"id": "x_cmp_04", "category": "comparison", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3497}
+{"id": "x_cmp_06", "category": "comparison", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3697}
+{"id": "x_yoy_05", "category": "multi_year", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3156}
+{"id": "fb_00678", "category": "numeric", "claims": 14, "unsupported": [], "verdict": "faithful", "tokens": 5356}

@@ -1,0 +1,24 @@
+{"id": "fb_00070", "category": "reasoning", "verdict": "correct", "reason": "The answer correctly states that American Water Works did not have positive working capital in FY2022 and explains its relevance, matching the reference conclusion.", "tokens": 814}
+{"id": "fb_00464", "category": "open", "verdict": "correct", "reason": "The answer confirms Boeing\u2019s business is subject to cyclicality, matching the reference statement.", "tokens": 733}
+{"id": "fb_00494", "category": "open", "verdict": "partial", "reason": "The answer only mentions a 787 rate increase and omits the 737 and 777X production rate changes referenced.", "tokens": 666}
+{"id": "fb_00517", "category": "reasoning", "verdict": "partial", "reason": "The answer correctly identifies commercial and defense categories but omits the Services category, which also exceeds 20% of revenue.", "tokens": 792}
+{"id": "fb_00540", "category": "reasoning", "verdict": "incorrect", "reason": "The answer states the turnover cannot be calculated, but the reference indicates AES converted inventory 9.5 times in FY\u202f2022.", "tokens": 935}
+{"id": "fb_00678", "category": "numeric", "verdict": "incorrect", "reason": "The answer contradicts the reference by stating no clear improvement and downplaying the 5.3% margin, whereas the reference confirms an improving gross margin from 4.8% to 5.3%.", "tokens": 1303}
+{"id": "fb_00711", "category": "reasoning", "verdict": "incorrect", "reason": "The answer does not provide the inventory turnover figure (2.7) given in the reference.", "tokens": 0}
+{"id": "fb_01009", "category": "extraction", "verdict": "incorrect", "reason": "The answer states the information is not found, but the reference lists specific geographies.", "tokens": 461}
+{"id": "fb_01198", "category": "extraction", "verdict": "incorrect", "reason": "The answer states the information was not found, but the reference provides specific drivers of revenue change.", "tokens": 0}
+{"id": "fb_01244", "category": "extraction", "verdict": "correct", "reason": "The answer confirms a $0.55 per share dividend in Q2 FY2022, matching the reference.", "tokens": 544}
+{"id": "fb_01319", "category": "extraction", "verdict": "correct", "reason": "The answer correctly states that restructuring costs were zero, matching the reference.", "tokens": 460}
+{"id": "fb_01346", "category": "numeric", "verdict": "incorrect", "reason": "The answer gives different tax rates (20.5% to 22.9%) and a 2.4\u2011point change, whereas the reference states 20% to 23% (a 3\u2011point change).", "tokens": 746}
+{"id": "fb_01351", "category": "numeric", "verdict": "correct", "reason": "The answer matches the reference figures and conclusion.", "tokens": 517}
+{"id": "fb_01865", "category": "open", "verdict": "incorrect", "reason": "The answer cites the Health Care segment, whereas the reference identifies the Consumer segment as the one that shrank organically.", "tokens": 535}
+{"id": "fb_03031", "category": "numeric", "verdict": "incorrect", "reason": "The answer fails to provide the required net working capital figure of $5,818 million.", "tokens": 0}
+{"id": "x_cmp_04", "category": "comparison", "verdict": "incorrect", "reason": "The answer incorrectly states that 3M\u2019s FY2022 R&D expense is not disclosed, whereas the reference provides a figure of $1,862\u202fmillion.", "tokens": 691}
+{"id": "x_cmp_05", "category": "comparison", "verdict": "incorrect", "reason": "The answer omits Verizon\u2019s net income figure and incorrectly states it is not found, whereas the reference provides Verizon\u2019s $21,256\u202fmillion and CVS\u2019s $4,149\u202fmillion.", "tokens": 544}
+{"id": "x_cmp_06", "category": "comparison", "verdict": "partial", "reason": "The answer correctly states American Water\u2019s FY2022 capex but fails to provide AES\u2019s absolute FY2022 capex figure, which the reference gives as $4,551\u202fmillion.", "tokens": 752}
+{"id": "x_una_01", "category": "unanswerable", "verdict": "correct", "reason": "Answer matches the reference statement that the information was not found in the filings.", "tokens": 0}
+{"id": "x_una_03", "category": "unanswerable", "verdict": "correct", "reason": "Answer matches the reference statement that the information was not found in the filings.", "tokens": 0}
+{"id": "x_una_10", "category": "unanswerable", "verdict": "correct", "reason": "Answer matches the reference statement.", "tokens": 0}
+{"id": "x_yoy_02", "category": "multi_year", "verdict": "partial", "reason": "The answer correctly states the FY2022 employee count but fails to provide the FY2021 figure.", "tokens": 623}
+{"id": "x_yoy_04", "category": "multi_year", "verdict": "incorrect", "reason": "The answer does not provide the required figures and contradicts the reference data.", "tokens": 0}
+{"id": "x_yoy_05", "category": "multi_year", "verdict": "correct", "reason": "The answer matches the reference figures and conclusion exactly.", "tokens": 525}
