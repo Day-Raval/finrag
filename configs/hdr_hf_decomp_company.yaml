@@ -1,0 +1,6 @@
+# Header + hybrid + filter, and every company the
+# question names gets at least one of the top 5 chunks. No rebuild, no LLM.
+# Overrides config.yaml. Use: FINRAG_CONFIG=configs/hdr_hf_decomp_company.yaml python -m ...
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
+retrieval: {hybrid: true, filter: true, decompose: company}

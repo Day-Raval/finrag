@@ -104,3 +104,36 @@ def test_search_reranks_a_wider_pool(monkeypatch):
     cfg = {"retrieval": {"top_k": 3, "rerank": True, "candidates": 20}}
     out = retrieval.search("q", cfg)
     assert seen["k"] == 20 and [c["chunk_id"] for c in out] == ["19", "18", "17"]
+
+
+def test_sub_filters_split_named_companies_or_filings():
+    from finrag.retrieval.decompose import sub_filters
+
+    two = {"ticker": ["KO", "PEP"], "fiscal_year": [2022]}
+    assert sub_filters(two, "company") == [
+        {"ticker": ["KO"], "fiscal_year": [2022]},
+        {"ticker": ["PEP"], "fiscal_year": [2022]},
+    ]
+    years = {"ticker": ["KO"], "fiscal_year": [2021, 2022]}
+    assert sub_filters(years, "company") == []  # one company: nothing to split
+    assert sub_filters(years, "filing") == [
+        {"ticker": ["KO"], "fiscal_year": [2021]},
+        {"ticker": ["KO"], "fiscal_year": [2022]},
+    ]
+    assert sub_filters(two, None) == [] and sub_filters(None, "filing") == []
+
+
+def test_search_covers_a_missing_company(monkeypatch):
+    from finrag import retrieval
+
+    pool = [chunk(f"KO:{i}", "KO", 2022, "t") for i in range(5)] + [chunk("PEP:0", "PEP", 2022, "t")]
+
+    def fake_dense(question, cfg, k, flt):  # KO always outranks PEP
+        return [c for c in pool if matches(c, flt)][:k]
+
+    monkeypatch.setattr(retrieval.dense, "search", fake_dense)
+    cfg = {**CFG, "retrieval": {"top_k": 5, "filter": True, "decompose": "company"}}
+    ids = [c["chunk_id"] for c in retrieval.search("Coca Cola vs PepsiCo FY2022 margin?", cfg)]
+    assert ids == ["KO:0", "KO:1", "KO:2", "KO:3", "PEP:0"]  # PEP swapped in for KO:4
+    cfg["retrieval"]["decompose"] = False
+    assert "PEP:0" not in [c["chunk_id"] for c in retrieval.search("Coca Cola vs PepsiCo FY2022 margin?", cfg)]
