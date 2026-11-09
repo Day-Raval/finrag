@@ -2,7 +2,19 @@
 
 This package generates grounded answers with Groq. [`answer.py`](answer.py)
 formats every retrieved chunk with a numbered company, fiscal-year, and Item
-header, then fills `prompts/answer_v1.md` with that context and the question.
+header, then fills the prompt named by `generation.prompt` in the config
+(default [`prompts/answer_v1.md`](../../../prompts/answer_v1.md)) with that
+context and the question. Prompt versions are separate files, so an experiment
+config can switch prompts without code changes:
+
+| Prompt | Status | Dev correctness / faithfulness |
+| --- | --- | ---: |
+| `answer_v1.md` | Default: short grounded-answer rule with citations and refusal | 0.381 / 0.923 |
+| `answer_v2.md` | Experiment ([`configs/prompt_v2.yaml`](../../../configs/prompt_v2.yaml)): calculate, answer every part, refuse only when nothing helps | 0.333 / 0.842 |
+| `answer_v3.md` | Experiment ([`configs/prompt_v3.yaml`](../../../configs/prompt_v3.yaml)): v1 plus definitions and a no-guessing rule | 0.310 / 0.538 |
+
+Asking the model to calculate and explain more made answers less grounded, so v1
+stays the default; see the root README's prompt experiments.
 
 `generate()` uses the configured `openai/gpt-oss-120b` model and returns the
 answer plus latency, prompt-token, and completion-token counts. The Groq client
@@ -28,6 +40,10 @@ usage. Empty replies are never cached, so they are retried on the next run.
 
 ## Limitations
 
+- Prompts are filled with Python `str.format`, so a prompt file may contain only
+  the `{context}` and `{question}` placeholders and no other braces;
+  `tests/test_prompts.py` checks this and that each prompt keeps the exact
+  refusal phrase the scorer counts.
 - Citation and no-evidence behavior are prompt instructions; this module does
   not verify that answer citations match retrieved chunks or that calculations
   are correct.

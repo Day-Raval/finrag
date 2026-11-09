@@ -14,7 +14,7 @@ The implemented baseline is organized by pipeline stage:
 | `finrag.retrieval` | `__init__.py`, `dense.py`, `hybrid.py`, `filters.py`, `reranker.py`, `decompose.py` | Dense search, optionally fused with BM25 (reciprocal rank fusion), filtered by the companies and fiscal years the question names, reranked by a cross-encoder, and covering every named company. |
 | `finrag.generation` | `answer.py`, `cache.py` | Format cited context, generate a Groq answer, and cache LLM responses on disk. |
 | `finrag.answering` | `pipeline.py`, `run_golden.py` | Run one question, or a resumable benchmark over the golden set or dev subset. |
-| `finrag.evaluation` | `build_golden.py`, `make_dev.py`, `lookup.py`, `scorers.py`, `score_run.py`, `retrieval_eval.py`, `judge.py`, `label.py`, `agreement.py`, `diff.py` | Build the golden and dev sets, score and compare runs, benchmark retrieval, judge answers, and validate the judge. |
+| `finrag.evaluation` | `build_golden.py`, `make_dev.py`, `lookup.py`, `scorers.py`, `score_run.py`, `retrieval_eval.py`, `judge.py`, `label.py`, `agreement.py`, `diff.py`, `ablation.py` | Build the golden and dev sets, score and compare runs, benchmark retrieval, judge answers, validate the judge, and build the ablation table. |
 
 See the [repository README](../README.md) for setup and runnable commands.
 

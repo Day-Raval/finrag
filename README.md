@@ -2,9 +2,15 @@
 
 *Grounded Q&A over SEC 10-K filings, with an evaluation harness. Repository and Python package: `finrag`. Latest release: [v0.1.0](https://github.com/Day-Raval/finrag/releases/tag/v0.1.0).*
 
+[![CI](https://github.com/Day-Raval/finrag/actions/workflows/ci.yml/badge.svg)](https://github.com/Day-Raval/finrag/actions/workflows/ci.yml)
+[![Eval data: CC BY-NC 4.0](https://img.shields.io/badge/eval%20data-CC%20BY--NC%204.0-lightgrey)](https://github.com/patronus-ai/financebench)
+[![Release](https://img.shields.io/github/v/release/Day-Raval/finrag)](https://github.com/Day-Raval/finrag/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 **Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
 
-> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and retrieval experiments: a contextual chunk header, hybrid BM25 + dense search, a company/fiscal-year filter, and per-company coverage raised section recall from 0.543 to 0.804, doc recall to 1.0, and MRR from 0.329 to 0.658. On the dev subset this nearly doubled judged correctness (0.214 to 0.381) and cut false refusals from 0.619 to 0.381, with no regressions. Refusals with the right filing already in context remain the main gap; the system is not production-ready.
+> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and retrieval experiments: a contextual chunk header, hybrid BM25 + dense search, a company/fiscal-year filter, and per-company coverage raised section recall from 0.543 to 0.804, doc recall to 1.0, and MRR from 0.329 to 0.658. On the dev subset this nearly doubled judged correctness (0.214 to 0.381) and cut false refusals from 0.619 to 0.381, with no regressions. Two grounded-prompt variants were tested and neither beat the original prompt; [`reports/ablation.md`](reports/ablation.md) records every component tried and the decision taken. Most remaining failures are answers whose figures are not in the five retrieved chunks; the system is not production-ready.
 
 ## What it is for
 
@@ -100,7 +106,7 @@ SEC_USER_AGENT="Your Name your.email@example.com"
 pytest
 ```
 
-The tests cover configuration loading and experiment overrides, environment setup, filing fetching and parsing, fixed-size and section-aware chunking, contextual chunk headers, deterministic scoring, judge-output parsing, judge-agreement statistics, the dev subset, the LLM response cache, run comparison, citation-context formatting, and golden-set construction. All tests run offline: they do not contact SEC EDGAR or Groq.
+The tests cover configuration loading and experiment overrides, environment setup, filing fetching and parsing, fixed-size and section-aware chunking, contextual chunk headers, deterministic scoring, judge-output parsing, judge-agreement statistics, the dev subset, the LLM response cache, run comparison, citation-context formatting, golden-set construction, the company/year filter, BM25 fusion, reranking and per-company coverage (with stubbed models), answer-prompt files, and the ablation table. All tests run offline: they do not contact SEC EDGAR or Groq.
 
 ### Build the local RAG corpus
 
@@ -190,7 +196,7 @@ The checked-in `baseline` run answered all 79 golden questions. Its retrieval-on
 | Document recall | 85.5% |
 | MRR | 0.329 |
 
-For the 69 answerable questions, deterministic scoring found a 17.2% numeric-match rate, 29.0% citation rate, and 68.1% false-refusal rate. The 10 unanswerable cases were refused correctly. Median latency was 22.8 seconds and p95 was 32.01 seconds, which is above the project target.
+For the 69 answerable questions, deterministic scoring found a 17.2% numeric-match rate, 33.3% citation rate (29.0% before a scorer fix counted `[Company, FY2022, Item 8]`-style citations), and 68.1% false-refusal rate. The 10 unanswerable cases were refused correctly. Median latency was 22.8 seconds and p95 was 32.01 seconds, which is above the project target.
 
 The LLM judge marked 20 answers correct, 3 partial, and 56 incorrect (0.272 weighted correctness). Of 22 non-refused answers evaluated for faithfulness, 20 were faithful and 2 unfaithful (0.909). These baseline measurements identify retrieval coverage, answer completeness, and refusal behavior as the next improvement areas rather than claims of system quality. The 0.272 correctness figure covers all 79 questions; on the 69 answerable ones it is 0.167. The correctness judge was validated against 20 hand-labelled answers: 90% pass/fail agreement, Cohen's kappa 0.74. Both disagreements were the judge being more lenient than the human label, so correctness may be slightly overstated.
 
@@ -233,13 +239,39 @@ The dev subset was answered with `hdr_hf_decomp_company` and judged like the bas
 | --- | ---: | ---: | ---: |
 | Judged correctness | 0.214 | 0.381 | +0.167 |
 | False-refusal rate | 0.619 | 0.381 | -0.238 |
-| Citation rate | 0.286 | 0.571 | +0.285 |
+| Citation rate | 0.381 | 0.714 | +0.333 |
 | Numeric match | 0.259 | 0.389 | +0.130 |
 | Faithfulness (non-refused) | — | 0.923 | |
 | p95 latency | 32.0 s | 28.1 s | |
 | Tokens per question | 3,043 | 3,098 | |
 
-`diff` found five improved answers and no regressions. With every evidence filing now retrieved, 8 of 21 answerable questions are still refused and comparison questions score 0.167, so the next step is the answer prompt rather than retrieval.
+`diff` found five improved answers and no regressions. With every evidence filing now retrieved, 8 of 21 answerable questions were still refused and comparison questions scored 0.167, so the next experiments targeted the answer prompt.
+
+### Prompt experiments
+
+Both variants ran on the same retrieval (`hdr_hf_decomp_company`) and dev subset, so the prompt is the only change. Citation rates use the corrected scorer.
+
+| Dev subset | v1 ([`answer_v1`](prompts/answer_v1.md)) | v2 ([`answer_v2`](prompts/answer_v2.md)) | v3 ([`answer_v3`](prompts/answer_v3.md)) |
+| --- | ---: | ---: | ---: |
+| Judged correctness | **0.381** | 0.333 | 0.310 |
+| Faithfulness (non-refused) | **0.923** | 0.842 | 0.538 |
+| Citation rate | **0.714** | 0.476 | 0.524 |
+| False-refusal rate | 0.381 | 0.048 | 0.333 |
+| Tokens per question | 3,098 | 3,439 | 3,317 |
+
+- **v2** told the model to calculate with stated definitions, use prior-year figures from the later filing, answer every part, and refuse only when nothing helps. Exact-phrase refusals nearly disappeared, but most became "cannot be calculated from the excerpts" answers instead, and the push to answer every part produced an invented figure and an unsupported comparison.
+- **v3** kept v1's refusal rule and added the definitions, the prior-year note, and a ban on guessing. Its answers added interpretation, computed shares, and claims about what the filings omit, which the faithfulness judge marked as unsupported.
+- **v1 stays.** Its short instruction already refuses when inputs are missing; most remaining failures name a figure that is not in the five retrieved chunks, which no prompt can supply. More context per answer (a larger `top_k`, or table-aware chunks) is the next lever.
+
+### Ablation
+
+[`reports/ablation.md`](reports/ablation.md) lists every retrieval and answer component with its metrics and the decision taken. It is generated from the saved reports and checked by CI:
+
+```bash
+python -m finrag.evaluation.ablation
+```
+
+The final configuration is [`configs/hdr_hf_decomp_company.yaml`](configs/hdr_hf_decomp_company.yaml) with `prompts/answer_v1.md`.
 
 ## Repository layout
 
@@ -288,7 +320,8 @@ The dev subset was answered with `hdr_hf_decomp_company` and judged like the bas
 │       │   ├── judge.py          # Correctness and faithfulness judge
 │       │   ├── label.py          # Blind hand-labelling CLI
 │       │   ├── agreement.py      # Judge-vs-human agreement and kappa
-│       │   └── diff.py           # Run-to-run comparison and CI gate
+│       │   ├── diff.py           # Run-to-run comparison and CI gate
+│       │   └── ablation.py       # Ablation table from saved reports
 │       └── __init__.py      # Application package
 ├── evals/
 │   ├── custom.jsonl         # Hand-written golden cases
@@ -296,8 +329,10 @@ The dev subset was answered with `hdr_hf_decomp_company` and judged like the bas
 │   └── dev.jsonl            # 24-question dev subset
 ├── reports/
 │   ├── runs/                # Per-run answers, scores, judge verdicts, hand labels, config
-│   └── retrieval/           # Retrieval-only results, one JSON per experiment
+│   ├── retrieval/           # Retrieval-only results, one JSON per experiment
+│   └── ablation.md          # Generated ablation table
 ├── tests/                   # Offline tests (no SEC or Groq calls)
+├── .github/workflows/ci.yml # Lint, tests, and saved-report checks on every push and PR
 ├── .env.example             # Required environment-variable template
 ├── CHANGELOG.md             # Release notes
 ├── LICENSE                  # MIT
@@ -342,11 +377,20 @@ See [`spec.md`](spec.md) for the full v1 requirements.
 
 ## Development
 
-Run the test suite before submitting changes:
+Run the linter and test suite before submitting changes:
 
 ```bash
+ruff check src tests
 pytest
 ```
+
+GitHub Actions ([`ci.yml`](.github/workflows/ci.yml)) runs on every push to `master` and every pull request, without secrets and with 0 Groq tokens:
+
+- `ruff check` and the offline test suite (the API-key check is skipped in CI);
+- every saved run in `reports/runs/` is rescored, and the job fails if the result differs from the committed reports, so a scorer change must ship with its rescored reports;
+- `reports/ablation.md` is regenerated, and the job fails if it is out of date.
+
+Live retrieval and answer evaluation need the locally built index and Groq quota, so they stay manual.
 
 Dependencies are listed in [`requirements.txt`](requirements.txt). The project currently uses a `src/` package layout and requires Python 3.12+.
 

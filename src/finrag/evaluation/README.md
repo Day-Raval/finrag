@@ -50,7 +50,8 @@ top-3 prompt would see) and search latency p50/p95 after one warm-up query.
 The checked-in `baseline` result answered 79/79 cases. Dense top-5 retrieval
 with fixed 512-token chunks and 64-token overlap achieved 0.543 section recall,
 0.855 document recall, and 0.329 MRR. Among 69 answerable questions,
-deterministic scoring recorded 0.172 numeric match, 0.290 citation rate, and
+deterministic scoring recorded 0.172 numeric match, 0.333 citation rate (0.290
+before the scorer accepted `FY2022`-style citations), and
 0.681 false-refusal rate; all 10 unanswerable questions were refused.
 
 ## Judge a run
@@ -105,6 +106,15 @@ so a dev run can be compared with the full baseline. It prints each metric's
 change, marked better or worse, and lists questions whose judged correctness
 went down or up. It exits with code 1 if correctness drops by more than
 `max_drop` (default 0.05), so it can gate CI.
+
+[`ablation.py`](ablation.py) builds `reports/ablation.md` from the saved
+retrieval reports and runs: one row per component tried, with its metrics and
+the decision taken. It makes no LLM calls; CI fails if the committed table is
+out of date.
+
+```bash
+python -m finrag.evaluation.ablation
+```
 
 Two independent runs of the unchanged baseline on the dev subset differed in a
 single answer (one dropped citation). On the dev subset one question is worth
