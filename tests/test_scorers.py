@@ -39,6 +39,8 @@ def test_refusal_and_citation():
     )
     assert has_citation("$92,763 million【3, 2022, Balance Sheet】")
     assert not has_citation("Total assets were $92,763 million.")
+    assert has_citation("Revenue $9,560 million [BOEING CO, FY2022, Item 8]")  # header style
+    assert not has_citation("see [3]")  # chunk number only
 
 
 def test_retrieval_scores():

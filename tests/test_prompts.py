@@ -11,7 +11,6 @@ def test_answer_prompts_fill_and_keep_the_refusal_phrase():
         assert REFUSAL in text.lower(), path  # score_run counts refusals by this phrase
 
 
-def test_v2_citation_format_is_scored_as_a_citation():
-    # the scorer needs a bare year: "FY2022" has no word boundary before 2022
-    assert not has_citation("[Coca-Cola, FY2022, Item 8]")
+def test_prompt_citation_formats_are_scored_as_citations():
     assert has_citation("Total assets were $92,763 million [Coca-Cola, 2022, Item 8].")
+    assert has_citation("Total assets were $92,763 million [Coca-Cola, FY2022, Item 8].")

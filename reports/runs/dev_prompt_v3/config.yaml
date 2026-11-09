@@ -1,0 +1,66 @@
+corpus:
+  years:
+  - 2021
+  - 2022
+  tickers:
+  - AMD
+  - BA
+  - AXP
+  - PEP
+  - MMM
+  - VZ
+  - CVS
+  - AES
+  - JNJ
+  - GLW
+  - LMT
+  - KO
+  - AWK
+  - GIS
+  - PFE
+  raw_dir: data/raw
+  parsed_dir: data/parsed
+  manifest: data/manifest.csv
+chunking:
+  strategy: fixed
+  size: 512
+  overlap: 64
+  header: true
+embedding:
+  provider: local
+  model: BAAI/bge-small-en-v1.5
+retrieval:
+  top_k: 5
+  hybrid: true
+  filter: true
+  rerank: false
+  candidates: 50
+  reranker: cross-encoder/ms-marco-MiniLM-L-6-v2
+  decompose: company
+generation:
+  provider: groq
+  model: openai/gpt-oss-120b
+  prompt: prompts/answer_v3.md
+  temperature: 0
+judge:
+  provider: groq
+  model: openai/gpt-oss-20b
+  temperature: 0
+  reasoning_effort: medium
+  max_tokens: 2048
+  correctness_prompt: prompts/judge_correctness_v1.md
+  faithfulness_prompt: prompts/judge_faithfulness_v1.md
+bulk:
+  provider: groq
+  model: openai/gpt-oss-20b
+golden:
+  path: evals/golden.jsonl
+  custom: evals/custom.jsonl
+  dev: evals/dev.jsonl
+  financebench_dir: data/financebench
+index:
+  chunks: data/index/{collection}.jsonl
+  qdrant_path: data/index/qdrant
+  collection: fixed_512_64_hdr
+runs_dir: reports/runs
+experiment: configs/prompt_v3.yaml

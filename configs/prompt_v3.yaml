@@ -1,0 +1,8 @@
+# Answer prompt v3 on the best retrieval (hdr_hf_decomp_company).
+# v1's caution plus: prior-year note, calculation definitions, no guessed figures,
+# partial answers that name the missing figure, and a citation example. No rebuild.
+# Overrides config.yaml. Use: FINRAG_CONFIG=configs/prompt_v3.yaml python -m ...
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
+retrieval: {hybrid: true, filter: true, decompose: company}
+generation: {prompt: prompts/answer_v3.md}

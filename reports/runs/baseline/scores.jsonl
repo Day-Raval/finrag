@@ -36,7 +36,7 @@
 {"id": "fb_01279", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": null, "citation": false, "refused": true, "total_s": 13.34, "tokens": 2841}
 {"id": "fb_01290", "category": "reasoning", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.65, "tokens": 3238}
 {"id": "fb_01319", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 32.01, "tokens": 3163}
-{"id": "fb_01328", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": false, "total_s": 15.98, "tokens": 3340}
+{"id": "fb_01328", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": true, "refused": false, "total_s": 15.98, "tokens": 3340}
 {"id": "fb_01346", "category": "numeric", "section_recall": 0.0, "doc_recall": 1.0, "mrr": 0.0, "numeric_match": 0.5, "citation": true, "refused": false, "total_s": 24.48, "tokens": 3294}
 {"id": "fb_01351", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.25, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 25.89, "tokens": 3269}
 {"id": "fb_01865", "category": "open", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.2, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.67, "tokens": 2979}
@@ -51,12 +51,12 @@
 {"id": "fb_04254", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.77, "tokens": 3197}
 {"id": "fb_04481", "category": "numeric", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 25.09, "tokens": 2938}
 {"id": "fb_04980", "category": "extraction", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": true, "refused": false, "total_s": 20.24, "tokens": 2794}
-{"id": "fb_06272", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 1.0, "citation": false, "refused": false, "total_s": 24.19, "tokens": 3427}
+{"id": "fb_06272", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 1.0, "citation": true, "refused": false, "total_s": 24.19, "tokens": 3427}
 {"id": "fb_09724", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 1.0, "numeric_match": 0.0, "citation": false, "refused": false, "total_s": 24.28, "tokens": 3347}
 {"id": "fb_10136", "category": "numeric", "section_recall": 0.0, "doc_recall": 0.0, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.45, "tokens": 2877}
 {"id": "fb_10420", "category": "numeric", "section_recall": 1.0, "doc_recall": 1.0, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 22.62, "tokens": 3125}
 {"id": "x_cmp_01", "category": "comparison", "section_recall": 0.5, "doc_recall": 1.0, "mrr": 0.3333333333333333, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 23.26, "tokens": 2899}
-{"id": "x_cmp_02", "category": "comparison", "section_recall": 0.5, "doc_recall": 0.5, "mrr": 0.25, "numeric_match": 0.6666666666666666, "citation": false, "refused": false, "total_s": 21.63, "tokens": 3083}
+{"id": "x_cmp_02", "category": "comparison", "section_recall": 0.5, "doc_recall": 0.5, "mrr": 0.25, "numeric_match": 0.6666666666666666, "citation": true, "refused": false, "total_s": 21.63, "tokens": 3083}
 {"id": "x_cmp_03", "category": "comparison", "section_recall": 0.0, "doc_recall": 0.5, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 16.39, "tokens": 2048}
 {"id": "x_cmp_04", "category": "comparison", "section_recall": 0.5, "doc_recall": 0.5, "mrr": 0.5, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.79, "tokens": 2905}
 {"id": "x_cmp_05", "category": "comparison", "section_recall": 0.0, "doc_recall": 0.5, "mrr": 0.0, "numeric_match": 0.0, "citation": false, "refused": true, "total_s": 21.83, "tokens": 2942}

@@ -7,7 +7,7 @@
     "doc_recall": 1.0,
     "mrr": 0.525,
     "numeric_match": 0.389,
-    "citation": 0.571,
+    "citation": 0.714,
     "refused": 0.381
   },
   "refusal_accuracy": 1.0,
@@ -31,7 +31,7 @@
       "doc_recall": 1.0,
       "mrr": 0.75,
       "numeric_match": 0.5,
-      "citation": 0.25,
+      "citation": 0.5,
       "refused": 0.5
     },
     "multi_year": {
@@ -58,7 +58,7 @@
       "doc_recall": 1.0,
       "mrr": 0.167,
       "numeric_match": 0.167,
-      "citation": 0.667,
+      "citation": 1.0,
       "refused": 0.0
     },
     "reasoning": {
@@ -67,7 +67,7 @@
       "doc_recall": 1.0,
       "mrr": 0.625,
       "numeric_match": 0.062,
-      "citation": 0.25,
+      "citation": 0.5,
       "refused": 0.5
     },
     "unanswerable": {

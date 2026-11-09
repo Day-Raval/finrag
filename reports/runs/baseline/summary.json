@@ -1,13 +1,13 @@
 {
   "run": "baseline",
-  "answered": "79/79",
+  "answered": 79,
   "overall": {
     "n": 69,
     "section_recall": 0.543,
     "doc_recall": 0.855,
     "mrr": 0.329,
     "numeric_match": 0.172,
-    "citation": 0.29,
+    "citation": 0.333,
     "refused": 0.681
   },
   "refusal_accuracy": 1.0,
@@ -22,7 +22,7 @@
       "doc_recall": 0.667,
       "mrr": 0.181,
       "numeric_match": 0.194,
-      "citation": 0.167,
+      "citation": 0.333,
       "refused": 0.667
     },
     "extraction": {
@@ -31,7 +31,7 @@
       "doc_recall": 0.917,
       "mrr": 0.472,
       "numeric_match": 0.44,
-      "citation": 0.583,
+      "citation": 0.667,
       "refused": 0.417
     },
     "multi_year": {
@@ -49,7 +49,7 @@
       "doc_recall": 0.812,
       "mrr": 0.432,
       "numeric_match": 0.179,
-      "citation": 0.125,
+      "citation": 0.188,
       "refused": 0.688
     },
     "open": {

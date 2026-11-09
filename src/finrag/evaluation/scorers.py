@@ -1,4 +1,4 @@
-"""Step 1.7: deterministic scorers. No LLM calls, so they cost nothing to run."""
+"""Deterministic scorers. No LLM calls, so they cost nothing to run."""
 
 import re
 
@@ -11,7 +11,8 @@ MONTHS = "january|february|march|april|may|june|july|august|september|october|no
 MONTH_DAY = re.compile(rf"\b(?:{MONTHS})\s+\d{{1,2}}(?![\d]|[.,]\d)", re.IGNORECASE)
 FORM_NAME = re.compile(r"\b10-[KQ]\b", re.IGNORECASE)
 NUMBER = re.compile(r"(?<![A-Za-z\d.])\d[\d,]*(?:\.\d+)?")
-CITATION = re.compile(r"[\[【][^\]】]*\b(?:19|20)\d{2}\b[^\]】]*[\]】]")
+# CITATION = re.compile(r"[\[【][^\]】]*\b(?:19|20)\d{2}\b[^\]】]*[\]】]") - old version
+CITATION = re.compile(r"[\[【][^\]】]*\b(?:FY\s?)?(?:19|20)\d{2}\b[^\]】]*[\]】]")
 
 
 def numbers(text: str) -> list[float]:
@@ -49,7 +50,7 @@ def refused(answer: str) -> bool:
 
 
 def has_citation(answer: str) -> bool:
-    """A bracketed reference that includes a year, e.g. [Coca-Cola, 2022, Item 8]."""
+    """A bracketed reference with a year, e.g. [Coca-Cola, 2022, Item 8] or [KO, FY2022, Item 8]."""
     return bool(CITATION.search(answer))
 
 
