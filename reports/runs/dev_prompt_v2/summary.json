@@ -1,0 +1,83 @@
+{
+  "run": "dev_prompt_v2",
+  "answered": 24,
+  "overall": {
+    "n": 21,
+    "section_recall": 0.738,
+    "doc_recall": 1.0,
+    "mrr": 0.525,
+    "numeric_match": 0.44,
+    "citation": 0.238,
+    "refused": 0.048
+  },
+  "refusal_accuracy": 1.0,
+  "false_refusal_rate": 0.048,
+  "p50_s": 25.6,
+  "p95_s": 28.4,
+  "tokens_per_question": 3439,
+  "by_category": {
+    "comparison": {
+      "n": 3,
+      "section_recall": 0.667,
+      "doc_recall": 1.0,
+      "mrr": 0.306,
+      "numeric_match": 0.556,
+      "citation": 0.667,
+      "refused": 0.0
+    },
+    "extraction": {
+      "n": 4,
+      "section_recall": 0.75,
+      "doc_recall": 1.0,
+      "mrr": 0.75,
+      "numeric_match": 1.0,
+      "citation": 0.0,
+      "refused": 0.25
+    },
+    "multi_year": {
+      "n": 3,
+      "section_recall": 0.833,
+      "doc_recall": 1.0,
+      "mrr": 0.528,
+      "numeric_match": 0.5,
+      "citation": 0.333,
+      "refused": 0.0
+    },
+    "numeric": {
+      "n": 4,
+      "section_recall": 1.0,
+      "doc_recall": 1.0,
+      "mrr": 0.633,
+      "numeric_match": 0.625,
+      "citation": 0.25,
+      "refused": 0.0
+    },
+    "open": {
+      "n": 3,
+      "section_recall": 0.333,
+      "doc_recall": 1.0,
+      "mrr": 0.167,
+      "numeric_match": 0.0,
+      "citation": 0.0,
+      "refused": 0.0
+    },
+    "reasoning": {
+      "n": 4,
+      "section_recall": 0.75,
+      "doc_recall": 1.0,
+      "mrr": 0.625,
+      "numeric_match": 0.062,
+      "citation": 0.25,
+      "refused": 0.0
+    },
+    "unanswerable": {
+      "n": 3,
+      "section_recall": null,
+      "doc_recall": null,
+      "mrr": null,
+      "numeric_match": null,
+      "citation": null,
+      "refused": 1.0
+    }
+  }
+}

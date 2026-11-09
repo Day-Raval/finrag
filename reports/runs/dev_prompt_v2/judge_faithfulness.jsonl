@@ -1,0 +1,21 @@
+{"id": "fb_00070", "category": "reasoning", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3420}
+{"id": "fb_00464", "category": "open", "claims": 6, "unsupported": [], "verdict": "faithful", "tokens": 3842}
+{"id": "fb_00494", "category": "open", "claims": 1, "unsupported": [], "verdict": "faithful", "tokens": 3183}
+{"id": "fb_00517", "category": "reasoning", "claims": 7, "unsupported": [], "verdict": "faithful", "tokens": 3429}
+{"id": "fb_00540", "category": "reasoning", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3720}
+{"id": "fb_00678", "category": "numeric", "claims": 6, "unsupported": [], "verdict": "faithful", "tokens": 3557}
+{"id": "fb_00711", "category": "reasoning", "claims": 5, "unsupported": ["The inventory turnover formula requires\u202fCOGS\u202f\u00f7\u202faverage inventory (where average inventory = (beginning\u202f+\u202fending inventory)\u202f\u00f7\u202f2).", "Because J&J is a diversified pharmaceutical and consumer\u2011health company with multiple product lines and significant portions of its sales (e.g., many returns are non\u2011resalable), traditional inventory\u2011turnover analysis is often less meaningful for assessing its operational performance."], "verdict": "unfaithful", "tokens": 3876}
+{"id": "fb_01009", "category": "extraction", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3247}
+{"id": "fb_01244", "category": "extraction", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3195}
+{"id": "fb_01319", "category": "extraction", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3685}
+{"id": "fb_01346", "category": "numeric", "claims": 3, "unsupported": [], "verdict": "faithful", "tokens": 3632}
+{"id": "fb_01351", "category": "numeric", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3470}
+{"id": "fb_01865", "category": "open", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3934}
+{"id": "fb_03031", "category": "numeric", "verdict": "error", "raw": "", "tokens": 5016}
+{"id": "x_cmp_04", "category": "comparison", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3159}
+{"id": "x_cmp_05", "category": "comparison", "claims": 3, "unsupported": ["CVS\u202fHealth reported higher net income attributable to the company in FY\u202f2022 ($4,149\u202fmillion)"], "verdict": "unfaithful", "tokens": 3736}
+{"id": "x_cmp_06", "category": "comparison", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3207}
+{"id": "x_yoy_02", "category": "multi_year", "claims": 2, "unsupported": [], "verdict": "faithful", "tokens": 3387}
+{"id": "x_yoy_04", "category": "multi_year", "claims": 4, "unsupported": ["FY\u202f2022 total assets: $1,044\u202fbillion", "FY\u202f2021 total assets: $1,030\u202fbillion"], "verdict": "unfaithful", "tokens": 4180}
+{"id": "x_yoy_05", "category": "multi_year", "claims": 4, "unsupported": [], "verdict": "faithful", "tokens": 3315}
+{"id": "fb_03031", "category": "numeric", "verdict": "error", "raw": "", "tokens": 5016}

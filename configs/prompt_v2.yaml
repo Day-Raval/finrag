@@ -1,0 +1,8 @@
+# Grounded answer prompt v2 on the best retrieval (hdr_hf_decomp_company).
+# Allows calculations with stated definitions, answers each part, refuses only when
+# nothing in context helps, and fixes the citation format. No rebuild.
+# Overrides original config.yaml. Use: FINRAG_CONFIG=configs/prompt_v2.yaml
+chunking: {header: true}
+index: {collection: fixed_512_64_hdr}
+retrieval: {hybrid: true, filter: true, decompose: company}
+generation: {prompt: prompts/answer_v2.md}
