@@ -1,0 +1,45 @@
+# Syntax check, unit tests, and checks on saved reports for every push and PR.
+# Live retrieval and answer evaluation need the local index (data/, not committed)
+# and stay manual.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        # unit tests stub the embedding and reranker models, so skip torch (~2 GB)
+        run: |
+          grep -v '^sentence-transformers' requirements.txt > /tmp/requirements-ci.txt
+          pip install -r /tmp/requirements-ci.txt
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Unit tests
+        run: pytest -q
+
+      - name: Saved runs match the current scorers
+        # a scorer change must ship with its rescored reports
+        run: |
+          for run in reports/runs/*/; do
+            python -m finrag.evaluation.score_run "$(basename "$run")" > /dev/null
+          done
+          git diff --exit-code -- reports/runs
+
+      - name: Ablation table is up to date
+        run: |
+          python -m finrag.evaluation.ablation > /dev/null
+          git diff --exit-code -- reports/ablation.md
