@@ -1,6 +1,6 @@
 # Annualyst
 
-*Ask questions about 30 SEC 10-K filings and get answers whose every figure is traced back to the filing. Repository and Python package: `finrag`. Latest release: [v0.1.0](https://github.com/Day-Raval/finrag/releases/tag/v0.1.0).*
+*Ask questions about 30 SEC 10-K filings and get answers whose every figure is traced back to the filing. Repository and Python package: `finrag`. Latest release: [v0.2.0](https://github.com/Day-Raval/finrag/releases/tag/v0.2.0).*
 
 [![CI](https://github.com/Day-Raval/finrag/actions/workflows/ci.yml/badge.svg)](https://github.com/Day-Raval/finrag/actions/workflows/ci.yml)
 [![Eval data: CC BY-NC 4.0](https://img.shields.io/badge/eval%20data-CC%20BY--NC%204.0-lightgrey)](https://github.com/patronus-ai/financebench)
@@ -16,15 +16,21 @@
 
 **How well it works.** Measured on a 79-question golden set (FinanceBench plus hand-written cases) with deterministic scorers and an LLM judge validated against hand labels (90% agreement, kappa 0.74):
 
-| | Baseline (v0.1.0) | Now |
+| All 79 questions (69 answerable) | Baseline (v0.1.0) | Final (v0.2.0) |
 | --- | ---: | ---: |
-| Evidence section in the top 5 (69 answerable questions) | 54% | **80%** |
+| Evidence section in the top 5 | 54% | **80%** |
 | Right filing in the top 5 | 86% | **100%** |
 | Mean reciprocal rank of the evidence | 0.33 | **0.66** |
-| Judged answer correctness (21-question dev set) | 0.21 | **0.38** |
-| Answerable questions wrongly refused (dev) | 62% | **38%** |
-| Answers with a citation (dev) | 38% | **71%** |
+| Judged answer correctness | 0.17 | **0.33** |
+| Answerable questions wrongly refused | 68% | **42%** |
+| Answers with a citation | 33% | **67%** |
+| Reference figures in the answer | 17% | **28%** |
+| Faithful to the retrieved passages (answered questions) | 91% (20/22) | 80% (33/41) |
+| Unanswerable questions correctly refused | 100% | 90% |
+| p95 latency | 32.0 s | 28.8 s |
 | Tokens per question | 3.0K | 3.1K |
+
+Judged correctness doubled: 16 answers improved and 2 regressed. The system now answers almost twice as many questions (41 vs 22), and faithfulness fell with it, mostly on multi-step reasoning questions (4 of 9 faithful).
 
 What moved it: a contextual header on every chunk, hybrid BM25 + dense search, a company and fiscal-year filter, and per-company coverage for comparison questions. What didn't: section-aware chunking, two cross-encoder rerankers, and two "grounded" prompt rewrites, all measured and dropped.
 
@@ -33,7 +39,7 @@ What moved it: a contextual header on every chunk, hybrid BM25 + dense search, a
 - [`docs/failure_case_study.md`](docs/failure_case_study.md): a "Not found" that looked like a retrieval miss and was a generation failure, diagnosed from the trace.
 - The evaluation harness: golden set, deterministic scorers, validated judge, dev subset with a regression gate, and CI that re-scores every saved run.
 
-**Limits.** 15 companies (AMD, Boeing, American Express, PepsiCo, 3M, Verizon, CVS Health, AES, Johnson & Johnson, Corning, Lockheed Martin, Coca-Cola, American Water Works, General Mills, Pfizer), fiscal 2021 and 2022 10-Ks only: no 10-Qs, earnings calls, prices, or investment advice. Judged correctness is still 0.38 on the dev set; most remaining failures need a figure that isn't in the five retrieved passages. Runs on Groq's free tier as a local, single-user app; not production-ready. Answer-level numbers are from the 21-question dev set (one question is worth about 0.05); the full 79-question run of the final configuration comes with the next release.
+**Limits.** 15 companies (AMD, Boeing, American Express, PepsiCo, 3M, Verizon, CVS Health, AES, Johnson & Johnson, Corning, Lockheed Martin, Coca-Cola, American Water Works, General Mills, Pfizer), fiscal 2021 and 2022 10-Ks only: no 10-Qs, earnings calls, prices, or investment advice. Judged correctness is 0.33 and faithfulness 0.80, both short of where they need to be; 42% of answerable questions are still refused, and reasoning questions are the weakest category. Runs on Groq's free tier as a local, single-user app; not production-ready. Each answerable question is worth about 0.015 on the full set, and the judge can move a borderline answer between partial and incorrect.
 
 ## Try it
 
@@ -79,6 +85,16 @@ flowchart LR
     config -. configures .-> generate
     config -. configures .-> judge
 ```
+
+| Layer | Final configuration | Baseline (v0.1.0) |
+| --- | --- | --- |
+| Corpus | 30 SEC EDGAR 10-Ks, parsed by Item, tables as Markdown | same |
+| Chunking | 512 tokens, 64 overlap, with a `company \| FY \| Item` header | same, no header |
+| Embeddings | Local `BAAI/bge-small-en-v1.5` | same |
+| Retrieval | Company/year filter, dense + BM25 with reciprocal rank fusion, per-company coverage | Dense top 5 |
+| Generation | Groq `openai/gpt-oss-120b`, [`prompts/answer_v1.md`](prompts/answer_v1.md) | same |
+| Evaluation | Deterministic scorers and a Groq `openai/gpt-oss-20b` judge | same |
+| Interface | FastAPI + web app with figure tie-out | command line |
 
 The final configuration is [`configs/hdr_hf_decomp_company.yaml`](configs/hdr_hf_decomp_company.yaml), an override of the baseline [`config.yaml`](config.yaml); every experiment in [`configs/`](configs/) changes one layer at a time.
 

@@ -1,5 +1,58 @@
 # Changelog
 
+## v0.2.0 — Improved retrieval, evaluated end to end, web app (2026-11-11)
+
+Every change was measured on the golden set and kept only if it helped;
+`reports/ablation.md` records each decision, including the ones dropped.
+
+### Added
+- **Contextual chunk headers:** every chunk starts with `company | FY | Item`.
+- **Hybrid search:** BM25 + dense, top 50 each, fused by reciprocal rank (k=60).
+- **Company/fiscal-year filter:** rule-based, no LLM call.
+- **Per-company coverage:** each company named in a question gets a passage.
+- **Web app (Annualyst):** FastAPI `/ask`, `/plan`, `/health`, and a research
+  workspace that ties every figure in an answer to the filing excerpt it came
+  from (found / calculated / not traceable).
+- **Evaluation:** 24-question dev subset, run-to-run `diff` with a regression
+  gate, ablation table, and CI that re-scores every saved run.
+- **Docs:** failure case study (J&J refusal with the evidence in context).
+
+### Measured and dropped
+Section-aware chunking, MiniLM and bge cross-encoder rerankers, and prompt
+rewrites v2 and v3.
+
+### Final results (full golden set, 79/79 answered; quality on 69 answerable)
+Run: `reports/runs/final`, config `configs/hdr_hf_decomp_company.yaml`,
+prompt `prompts/answer_v1.md`.
+
+| Metric | v0.1.0 | v0.2.0 |
+| --- | ---: | ---: |
+| Section recall@5 | 0.543 | 0.804 |
+| Document recall@5 | 0.855 | 1.000 |
+| MRR | 0.329 | 0.658 |
+| Answer correctness (LLM judge) | 0.167 | 0.333 |
+| Faithfulness (non-refused answers) | 0.909 (20/22) | 0.805 (33/41) |
+| False refusal rate | 0.681 | 0.420 |
+| Refusal accuracy (unanswerable) | 1.000 | 0.900 |
+| Numeric match | 0.172 | 0.278 |
+| Citation rate | 0.333* | 0.667 |
+| p50 / p95 latency | 22.8 s / 32.0 s | 23.1 s / 28.8 s |
+| Tokens per question | 3,043 | 3,136 |
+
+\*v0.1.0 reported 0.290; the citation scorer now also accepts `FY2022`-style
+years and `【】` brackets, and every run was re-scored.
+
+Correctness: 16 answers improved, 2 regressed (fb_01107 correct → partial,
+fb_06272 correct → incorrect); the gate passed.
+
+### Known limits
+- Faithfulness fell as the system answered more questions; reasoning questions
+  are the weakest (4 of 9 faithful).
+- 42% of answerable questions are still refused; one unanswerable question was
+  answered.
+- p95 latency (28.8 s) is far above the 10 s target; it is dominated by the
+  generator call on Groq's free tier.
+
 ## v0.1.0 — Baseline RAG (2026-10-31)
 
 A deliberately naive RAG over SEC 10-K filings, released as the measured
