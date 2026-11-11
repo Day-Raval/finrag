@@ -49,53 +49,35 @@ python -m finrag.app                          # http://127.0.0.1:8000
 
 ## How it works
 
-**How a question is answered.** The filing corpus is indexed once; each question is filtered to the companies and years it names, searched two ways, and answered from the top five passages. The app then checks every figure in the answer against those passages.
-
-```mermaid
-flowchart TB
-    edgar[("30 SEC 10-Ks<br/>15 companies, FY2021–22")] --> parse["Parse by Item<br/>tables as Markdown"]
-    parse --> chunk["512-token chunks<br/>+ company | FY | Item header"]
-    chunk --> qdrant[("Qdrant<br/>bge-small embeddings")]
-    chunk --> bm25[("BM25<br/>keyword index")]
-
-    q(["Question"]) --> filter["Company + year filter<br/>rules, no LLM"]
-    filter --> fuse["Dense + BM25, top 50 each<br/>fused by reciprocal rank"]
-    qdrant --> fuse
-    bm25 --> fuse
-    fuse --> cover["Per-company coverage<br/>each named company gets a passage"]
-    cover --> top5["Top 5 passages, with citation headers"]
-    top5 --> llm["gpt-oss-120b on Groq<br/>answer from passages, cite, or refuse"]
-    llm --> tie["Figure tie-out in the app<br/>found, calculated, or not traceable"]
-    top5 -. "checked against" .-> tie
-
-    classDef store fill:#e8eee8,stroke:#586a6d,color:#1c2b30
-    classDef step fill:#fbfcfa,stroke:#c8d3cb,color:#1c2b30
-    classDef model fill:#dde6f1,stroke:#22477a,color:#1c2b30
-    classDef ok fill:#d9eadd,stroke:#2f7a4f,color:#1c2b30
-    class edgar,qdrant,bm25 store
-    class parse,chunk,filter,fuse,cover,top5,q step
-    class llm model
-    class tie ok
-```
-
-**How a change gets in.** Every retrieval or prompt change runs against the golden set and is kept only if it measurably helps; the [ablation table](reports/ablation.md) records each decision, including the ones dropped.
+The filing corpus is indexed once; each question is filtered to the companies and years it names, searched two ways, and answered from the top passages. The app checks every figure against those passages, and every change is kept only if it helps on the golden set ([ablation table](reports/ablation.md)).
 
 ```mermaid
 flowchart LR
-    golden[("Golden set<br/>79 questions")] --> run["Run the pipeline<br/>LLM responses cached"]
-    run --> score["Deterministic scorers<br/>+ judge validated on hand labels"]
-    score --> gate{"Better on the dev set,<br/>no regressions?"}
-    gate -- yes --> ship["Ship, and record<br/>in the ablation table"]
-    gate -- no --> drop["Drop, and record why"]
+    analyst[Financial analyst] --> question[Question]
+    question --> filter[Company and year filter]
+    filings[(SEC 10-K filings)] --> ingest[Ingest and chunk by Item]
+    ingest --> header[Add company, FY, Item header]
+    header --> embed[Create embeddings]
+    embed --> qdrant[(Qdrant vector store)]
+    header --> bm25[(BM25 keyword index)]
+    filter --> retrieve[Hybrid retrieval with rank fusion]
+    retrieve <--> qdrant
+    retrieve <--> bm25
+    retrieve --> cover[Per-company coverage]
+    cover --> context[Grounded filing context]
+    context --> generate[Groq answer generation]
+    question --> generate
+    generate --> answer[Answer with citations]
+    answer --> tieout[Figure tie-out in the app]
+    context -. checked against .-> tieout
+    tieout --> response[Validated analyst response]
+    answer --> judge[Groq quality judge]
+    judge --> gate[Golden-set gate and ablation table]
 
-    classDef store fill:#e8eee8,stroke:#586a6d,color:#1c2b30
-    classDef step fill:#fbfcfa,stroke:#c8d3cb,color:#1c2b30
-    classDef ok fill:#d9eadd,stroke:#2f7a4f,color:#1c2b30
-    classDef no fill:#f5e6c2,stroke:#8a5a00,color:#1c2b30
-    class golden store
-    class run,score,gate step
-    class ship ok
-    class drop no
+    config[config.yaml + configs/ override] -. configures .-> ingest
+    config -. configures .-> retrieve
+    config -. configures .-> generate
+    config -. configures .-> judge
 ```
 
 The final configuration is [`configs/hdr_hf_decomp_company.yaml`](configs/hdr_hf_decomp_company.yaml), an override of the baseline [`config.yaml`](config.yaml); every experiment in [`configs/`](configs/) changes one layer at a time.
