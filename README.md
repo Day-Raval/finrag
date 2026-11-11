@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-![Annualyst answering "How did Verizon's net income change from FY2021 to FY2022?": every figure is marked as found in a filing excerpt or calculated from found figures, next to the evidence it came from](docs/app.png)
+![Annualyst answering "How did Verizon's net income change from FY2021 to FY2022?": every figure is marked as found in a filing excerpt or calculated from found figures, next to the evidence it came from](docs/failure_jnj_after.png)
 
 ## In two minutes
 
