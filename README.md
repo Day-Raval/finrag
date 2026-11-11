@@ -273,6 +273,13 @@ python -m finrag.evaluation.ablation
 
 The final configuration is [`configs/hdr_hf_decomp_company.yaml`](configs/hdr_hf_decomp_company.yaml) with `prompts/answer_v1.md`.
 
+### Failure case study
+
+[`docs/failure_case_study.md`](docs/failure_case_study.md) walks through failures caught in the app:
+
+- **"Not found" with the evidence in context.** Asked for Johnson & Johnson's operating income, the system refused, yet the trace shows the pre-tax earnings table was retrieved; J&J doesn't report a line by that name. Asked with J&J's own term, the same table produced a correct answer with every figure traced. The model read the question too literally; a "closest reported measure" prompt rule is queued as an experiment.
+- **The answer checker failed in both directions.** It first marked a correct, rounded Verizon answer as untraceable, then, after the fix, accepted a vague rounded figure through an unrelated number. Both cases are now unit tests run in CI.
+
 ## Repository layout
 
 ```text
