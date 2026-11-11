@@ -1,6 +1,6 @@
 # Annualyst
 
-*Grounded Q&A over SEC 10-K filings, with an evaluation harness. Repository and Python package: `finrag`. Latest release: [v0.1.0](https://github.com/Day-Raval/finrag/releases/tag/v0.1.0).*
+*Ask questions about 30 SEC 10-K filings and get answers whose every figure is traced back to the filing. Repository and Python package: `finrag`. Latest release: [v0.1.0](https://github.com/Day-Raval/finrag/releases/tag/v0.1.0).*
 
 [![CI](https://github.com/Day-Raval/finrag/actions/workflows/ci.yml/badge.svg)](https://github.com/Day-Raval/finrag/actions/workflows/ci.yml)
 [![Eval data: CC BY-NC 4.0](https://img.shields.io/badge/eval%20data-CC%20BY--NC%204.0-lightgrey)](https://github.com/patronus-ai/financebench)
@@ -8,17 +8,75 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-**Annualyst** is a retrieval-augmented generation (RAG) system for answering financial-analysis questions from public companies' annual reports. It is designed to ground every answer in SEC 10-K filings, cite the source of each factual claim, and state when the available filings do not contain the answer.
+![Annualyst answering "How did Verizon's net income change from FY2021 to FY2022?": every figure is marked as found in a filing excerpt or calculated from found figures, next to the evidence it came from](docs/app.png)
 
-> **Project status:** v0.1.0 baseline RAG is implemented, evaluated, and released. The pipeline parses SEC filings, creates fixed-size chunks, embeds and indexes them locally, retrieves the top five matching chunks, and generates grounded answers with Groq. A 79-question golden set, deterministic scoring, and an LLM judge validated against hand labels measure the baseline. Since v0.1.0 the repository also has experiment tooling (a 24-question dev subset, an LLM response cache, a run-to-run diff, and per-experiment config overrides), and retrieval experiments: a contextual chunk header, hybrid BM25 + dense search, a company/fiscal-year filter, and per-company coverage raised section recall from 0.543 to 0.804, doc recall to 1.0, and MRR from 0.329 to 0.658. On the dev subset this nearly doubled judged correctness (0.214 to 0.381) and cut false refusals from 0.619 to 0.381, with no regressions. Two grounded-prompt variants were tested and neither beat the original prompt; [`reports/ablation.md`](reports/ablation.md) records every component tried and the decision taken. Most remaining failures are answers whose figures are not in the five retrieved chunks; the system is not production-ready.
+## In two minutes
 
-## What it is for
+**What it does.** Ask "How did Verizon's net income change from FY2021 to FY2022?". Annualyst narrows the search to Verizon's fiscal 2021 and 2022 10-Ks, retrieves the five most relevant passages, and has an LLM answer from those passages only, with citations. The app then checks every figure in the answer against the passages and marks it *found*, *calculated* from found figures (with the working shown), or *not traceable*.
 
-Annualyst is built for financial analysts who need answers from a bounded filing corpus rather than general web knowledge. The initial corpus covers FY2021 and FY2022 10-K filings for 15 public companies (30 filings total), sourced from SEC EDGAR:
+**How well it works.** Measured on a 79-question golden set (FinanceBench plus hand-written cases) with deterministic scorers and an LLM judge validated against hand labels (90% agreement, kappa 0.74):
 
-AMD, Boeing, American Express, PepsiCo, 3M, Verizon, CVS Health, AES, Johnson & Johnson, Corning, Lockheed Martin, Coca-Cola, American Water Works, General Mills, and Pfizer.
+| | Baseline (v0.1.0) | Now |
+| --- | ---: | ---: |
+| Evidence section in the top 5 (69 answerable questions) | 54% | **80%** |
+| Right filing in the top 5 | 86% | **100%** |
+| Mean reciprocal rank of the evidence | 0.33 | **0.66** |
+| Judged answer correctness (21-question dev set) | 0.21 | **0.38** |
+| Answerable questions wrongly refused (dev) | 62% | **38%** |
+| Answers with a citation (dev) | 38% | **71%** |
+| Tokens per question | 3.0K | 3.1K |
 
-The v1 scope excludes 10-Qs, earnings calls, real-time prices, and investment advice.
+What moved it: a contextual header on every chunk, hybrid BM25 + dense search, a company and fiscal-year filter, and per-company coverage for comparison questions. What didn't: section-aware chunking, two cross-encoder rerankers, and two "grounded" prompt rewrites, all measured and dropped.
+
+**Where to look.**
+- [`reports/ablation.md`](reports/ablation.md): every component tried, its metrics, and the decision taken.
+- [`docs/failure_case_study.md`](docs/failure_case_study.md): a "Not found" that looked like a retrieval miss and was a generation failure, diagnosed from the trace.
+- The evaluation harness: golden set, deterministic scorers, validated judge, dev subset with a regression gate, and CI that re-scores every saved run.
+
+**Limits.** 15 companies (AMD, Boeing, American Express, PepsiCo, 3M, Verizon, CVS Health, AES, Johnson & Johnson, Corning, Lockheed Martin, Coca-Cola, American Water Works, General Mills, Pfizer), fiscal 2021 and 2022 10-Ks only: no 10-Qs, earnings calls, prices, or investment advice. Judged correctness is still 0.38 on the dev set; most remaining failures need a figure that isn't in the five retrieved passages. Runs on Groq's free tier as a local, single-user app; not production-ready. Answer-level numbers are from the 21-question dev set (one question is worth about 0.05); the full 79-question run of the final configuration comes with the next release.
+
+## Try it
+
+You need Python 3.12+, a [Groq API key](https://console.groq.com/keys), and an SEC User-Agent with your name and email in `.env` (see [Getting started](#getting-started)).
+
+```bash
+pip install -r requirements.txt
+python -m finrag.ingestion.fetch_filings      # 30 10-Ks from SEC EDGAR
+python -m finrag.ingestion.parse_filings
+FINRAG_CONFIG=configs/hdr_hf_decomp_company.yaml python -m finrag.indexing.build_index
+python -m finrag.app                          # http://127.0.0.1:8000
+```
+
+## How it works
+
+```mermaid
+flowchart LR
+    q[Question] --> filter["Company and year filter<br/>(rules, no LLM)"]
+    filter --> search["Hybrid search<br/>dense + BM25, fused by rank"]
+    search --> cover[Per-company coverage]
+    cover --> top5[Top 5 passages]
+    top5 --> llm["Groq gpt-oss-120b<br/>answers from passages only"]
+    llm --> answer[Answer with citations]
+    answer --> tie["Figure tie-out in the app<br/>found / calculated / not traceable"]
+    top5 --> tie
+
+    filings[(30 SEC 10-Ks)] --> parse[Parse into Items<br/>tables as Markdown]
+    parse --> chunk["512-token chunks<br/>with company / year / Item header"]
+    chunk --> index[(Qdrant + BM25)]
+    index --> search
+```
+
+| Layer | Final configuration | Baseline (v0.1.0) |
+| --- | --- | --- |
+| Corpus | 30 SEC EDGAR 10-Ks, parsed by Item, tables as Markdown | same |
+| Chunking | 512 tokens, 64 overlap, with a `company \| FY \| Item` header | same, no header |
+| Embeddings | Local `BAAI/bge-small-en-v1.5` | same |
+| Retrieval | Company/year filter, dense + BM25 with reciprocal rank fusion, per-company coverage | Dense top 5 |
+| Generation | Groq `openai/gpt-oss-120b`, [`prompts/answer_v1.md`](prompts/answer_v1.md) | same |
+| Evaluation | Deterministic scorers and a Groq `openai/gpt-oss-20b` judge | same |
+| Interface | FastAPI + web app with figure tie-out | command line |
+
+The final configuration is [`configs/hdr_hf_decomp_company.yaml`](configs/hdr_hf_decomp_company.yaml), an override of the baseline [`config.yaml`](config.yaml); every experiment in [`configs/`](configs/) changes one layer at a time.
 
 ## Design principles
 
@@ -27,44 +85,6 @@ The v1 scope excludes 10-Qs, earnings calls, real-time prices, and investment ad
 - **Numerical integrity:** use figures from the correct company and fiscal year; calculations should show their inputs.
 - **Explicit uncertainty:** return `Not found in the filings.` instead of guessing when evidence is unavailable.
 - **Operational discipline:** target p95 query latency below 10 seconds and track cost per query.
-
-## Intended architecture
-
-| Layer | v1 technology | Configuration |
-| --- | --- | --- |
-| Corpus | SEC EDGAR 10-K filings | `data/manifest.csv` |
-| Chunking | Fixed-size chunks (512 tokens, 64-token overlap) | `config.yaml` |
-| Embeddings | Local `BAAI/bge-small-en-v1.5` | `config.yaml` |
-| Vector search | Local Qdrant | `config.yaml` |
-| Answer generation | Groq `openai/gpt-oss-120b` | `config.yaml` |
-| Answer evaluation | Deterministic scorers and Groq `openai/gpt-oss-20b` judge | `config.yaml` |
-
-This table is the v0.1.0 baseline. Experiments change one layer at a time through files in [`configs/`](configs/); see [Retrieval experiments](#retrieval-experiments) for results.
-
-The answer prompt at [`prompts/answer_v1.md`](prompts/answer_v1.md) enforces source citations and the required no-evidence response.
-
-```mermaid
-flowchart LR
-    analyst[Financial analyst] --> question[Question]
-    question --> retrieve[Retrieve relevant chunks]
-    filings[(SEC 10-K filings)] --> ingest[Ingest and chunk]
-    ingest --> embed[Create embeddings]
-    embed --> qdrant[(Qdrant vector store)]
-    retrieve <--> qdrant
-    retrieve --> context[Grounded filing context]
-    context --> generate[Groq answer generation]
-    question --> generate
-    generate --> answer[Answer with citations]
-    answer --> judge[Groq quality judge]
-    judge --> response[Validated analyst response]
-
-    config[config.yaml] -. configures .-> ingest
-    config -. configures .-> retrieve
-    config -. configures .-> generate
-    config -. configures .-> judge
-```
-
-The implemented baseline follows the complete flow, including deterministic scoring and the Groq quality judge. Components under `src/finrag` are organized around these pipeline responsibilities.
 
 ## Getting started
 
@@ -131,6 +151,14 @@ python -m finrag.answering.pipeline "What was 3M's FY2022 revenue?"
 ```
 
 The command retrieves the top five dense matches from the local Qdrant index, sends their citation-labeled text to the configured Groq model, and prints the answer, retrieved chunk IDs and scores, latency, and token usage.
+
+### Run the app
+
+```bash
+python -m finrag.app
+```
+
+Open http://127.0.0.1:8000. The app serves the final configuration (set `FINRAG_CONFIG` to serve another), warms search up at startup, and listens on your machine only. Each answer shows the search scope, the five excerpts with relevance, retrieval and generation time, tokens, and a check of every figure against the excerpts. Earlier answers in the session reopen without another call. See [`src/finrag/app/README.md`](src/finrag/app/README.md).
 
 ### Create and run the golden set
 
