@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0 — Improved retrieval, evaluated end to end, web app (2026-11-11)
+## v0.2.0 — Improved retrieval, configured experiments evaluated end to end, web app (2026-11-11)
 
 Every change was measured on the golden set and kept only if it helped;
 `reports/ablation.md` records each decision, including the ones dropped.
