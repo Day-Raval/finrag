@@ -33,8 +33,11 @@
       const end = m.index + m[0].length;
       const unit = text.slice(end, end + 14).match(UNIT)[0];
       const { v, round, scale } = measure(m[0], unit);
-      const tol = scale > 1 ? round : 1e-9;             // plain figures must match exactly
-      const hits = sources.flat().filter((s) => Math.abs(s.v - v) <= tol);
+      // plain figures must match exactly; rounded billions need 3+ significant digits
+      // ("22.6 billion" ±0.2%), since "0.9 billion" would match anything from 850 to 950
+      const digits = plain(m[0]).replace(".", "").replace(/^0+/, "").length;
+      const hits = scale > 1 && digits < 3 ? []
+        : sources.flat().filter((s) => Math.abs(s.v - v) <= (scale > 1 ? round : 1e-9));
       const before = text.slice(Math.max(0, m.index - 80), m.index)
         .replace(CITE, " ").replace(/^[^[【]*[\]】]/, " ")     // drop whole and cut-off citations
         .replace(/\s+/g, " ").replace(/ ([,.;])/g, "$1").replace(/\$\s*$/, "").trim().split(" ").slice(-7).join(" ");

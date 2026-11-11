@@ -37,3 +37,11 @@ test("percent change is calculated only from figures the answer tied", () => {
   // 100 = 600 - 500, but the answer never cited 600 or 500, so it stays flagged
   assert.equal(tieOut("A gap of $100 million.", ["600 and 500"]).figures[0].status, "flag");
 });
+
+test("a vague rounded figure is never 'found' by a nearby unrelated number", () => {
+  // 912 sits inside 0.9 billion's ±50 million window, but one significant digit proves nothing
+  const r = tieOut("Net income fell from $22.6 billion to $21.7 billion, down $0.9 billion.",
+    ["| Net income | $21,748 | $22,618 |", "Other items totalled 912 in the year."]);
+  assert.deepEqual(statuses(r), [["22.6 billion", "tied"], ["21.7 billion", "tied"], ["0.9 billion", "calc"]]);
+  assert.deepEqual(r.figures[2].srcs, [0]);  // proven by 22,618 − 21,748, not by the 912
+});
