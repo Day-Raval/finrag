@@ -12,8 +12,13 @@ from finrag.config import load_config
 from finrag.generation.answer import generate
 from finrag.retrieval import search
 
+TRACE_KEYS = ("chunk_id", "doc_id", "item", "score")
+TEXT_KEYS = ("company", "fiscal_year", "title", "text")  # for the app's trace view
 
-def answer(question: str, cfg: dict) -> dict:
+
+def answer(question: str, cfg: dict, text: bool = False) -> dict:
+    """Retrieve, then generate. `text=True` also returns each chunk's text (app use)."""
+    keys = TRACE_KEYS + TEXT_KEYS if text else TRACE_KEYS
     start = time.time()
     chunks = search(question, cfg)
     retrieve_s = round(time.time() - start, 2)
@@ -23,9 +28,7 @@ def answer(question: str, cfg: dict) -> dict:
         "retrieve_s": retrieve_s,
         # cached answers keep their original latency, so p50/p95 stay comparable
         "total_s": round(retrieve_s + result["latency_s"], 2),
-        "retrieved": [
-            {k: c[k] for k in ("chunk_id", "doc_id", "item", "score")} for c in chunks
-        ],
+        "retrieved": [{k: c.get(k) for k in keys} for c in chunks],
     }
 
 

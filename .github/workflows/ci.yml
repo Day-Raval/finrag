@@ -32,6 +32,9 @@ jobs:
 
       - name: Unit tests
         run: pytest -q
+      
+      - name: UI tie-out tests
+        run: node --test tests/tieout.test.js
 
       - name: Saved runs match the current scorers
         # a scorer change must ship with its rescored reports

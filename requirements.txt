@@ -9,3 +9,6 @@ pytest
 ruff
 groq
 lxml
+fastapi 
+uvicorn 
+httpx
